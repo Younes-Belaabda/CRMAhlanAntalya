@@ -27,6 +27,7 @@ class SettingController extends Controller
 
     public function update(Request $request)
     {
+        dD($request->all());
         foreach($request->all() as $name => $value){
             if($value == null)
                 continue;
