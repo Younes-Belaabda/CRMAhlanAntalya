@@ -32,12 +32,11 @@ class SettingController extends Controller
                 continue;
             if($request->hasFile($name)){
                 $file = $request->file($name);
-                // $ext = '.' . $file->getClientOriginalExtension();
-                // $filename = 'uploads/settings/' . time() . $ext;
                 $filename = 'uploads/settings/';
                 $file->move(base_path('public/' . $filename), $file->getClientOriginalName());
                 $filename .= $file->getClientOriginalName();
                 $setting  = \App\Models\Setting::where('name' , $name)->first();
+                dd($setting);
                 if($setting){
                     $setting->value = $filename;
                     $setting->save();
