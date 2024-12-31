@@ -24,3 +24,7 @@ function panel_url($route)
 {
     return url('/public/panel/' . $route);
 }
+
+function setting($name){
+    return \App\Models\Setting::where('name' , $name)->first()->value ?? '';
+}

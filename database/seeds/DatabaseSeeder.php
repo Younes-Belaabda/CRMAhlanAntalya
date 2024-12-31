@@ -38,12 +38,12 @@ class DatabaseSeeder extends Seeder
        // ApiTypes::factory()->create([
        //     'type_name' => 'fetch_search',
        // ]);
-        User::factory()->create([
-            'user_name' => 'mryusuf',
-            'full_name' => 'Yousef Alnijme',
-            'email' => 'al-aneeeed@gmail.com',
-            'type' => '1',
-            'password' => Hash::make('mryusuf2021')
-        ]);
+        // User::factory()->create([
+        //     'user_name' => 'mryusuf',
+        //     'full_name' => 'Yousef Alnijme',
+        //     'email' => 'al-aneeeed@gmail.com',
+        //     'type' => '1',
+        //     'password' => Hash::make('mryusuf2021')
+        // ]);
     }
 }

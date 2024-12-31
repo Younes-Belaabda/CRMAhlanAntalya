@@ -18,78 +18,38 @@ class SettingController extends Controller
     {
        //$this->middleware('IsAdmin');
     }
-    
+
     public function index()
     {
         $settings = \App\Models\Setting::all();
         return view('panel.setting.view' , compact('settings'));
     }
 
-    public function delete($id)
+    public function update(Request $request)
     {
-        $item = Voucher::find($id);
-        return (isset($item) && $item->delete()) ? $this->response_api(true, 'The deletion was successful') : $this->response_api(false, 'Error');
-    }
-
-    public function add_new($id = false)
-    {
-        $showDemoNotification = false;
-        $showSuccesNotification  = false;
-        $data = Voucher::find($id);
-        if($id != false && $data == null){
-          return redirect()->back()->with('danger' , __('Error Types Not Found'));
-        }
-
-        return view('panel.voucher.add_new' , compact('data' , 'id' ,'showDemoNotification' ,'showSuccesNotification'));
-    }
-
-    public function save_new(Request $request ,$id = false)
-    {
-        $validator = Validator::make($request->all() ,[
-            'name' => 'required',
-        ]);
-
-      if ($validator->fails()){
-          return redirect()->back()->withInput()->withErrors($validator);
-      }
-
-      if($id){
-        $item = Voucher::find($id);
-      }else{
-        $item = new Voucher;
-      }
-      $item->type = 1;
-      $item->gneder = $request->gneder;
-      $item->name = $request->name;
-      $item->date = $request->date;
-      $item->Num = $request->Num;
-      $item->cin = $request->cin;
-      $item->cout = $request->cout;
-      $item->status = $request->status;
-      $item->hotel = $request->hotel;
-      $item->address = $request->address;
-      $item->b_amount = $request->b_amount;
-      $item->p_amount = $request->p_amount;
-      $item->note = $request->note;
-        $item->user_id = auth()->user()->id;
-      
-
-      if($item->save()){
-        $rooms = VoucherRoom::where("voucher_id",$item->id)->delete();
-        foreach($request->rooms as $key=>$room){
-            if($room != ""){
-                  VoucherRoom::create([
-                    "voucher_id"=>$item->id,
-                    "rooms"=>$room,
-                    "pax"=>$request->pax[$key],
-                    "board"=>$request->board[$key],
-                    "view"=>$request->view[$key],
-                    "no_room"=>$request->no_room[$key],
-                  ]);
+        foreach($request->all() as $name => $value){
+            if($value == null)
+                continue;
+            if($request->hasFile($name)){
+                $file = $request->file($name);
+                // $ext = '.' . $file->getClientOriginalExtension();
+                // $filename = 'uploads/settings/' . time() . $ext;
+                $filename = 'uploads/settings/';
+                $file->move(base_path('public/' . $filename), $file->getClientOriginalName());
+                $filename .= $file->getClientOriginalName();
+                $setting  = \App\Models\Setting::where('name' , $name)->first();
+                if($setting){
+                    $setting->value = $filename;
+                    $setting->save();
+                }
+            }else{
+                $setting  = \App\Models\Setting::where('name' , $name)->first();
+                if($setting){
+                    $setting->value = $value;
+                    $setting->save();
+                }
             }
         }
-        return redirect("/admin/voucher")->with('success' , __('Voucher Created'));
-      }
-      return redirect()->back()->with('danger' , __('Error Voucher Created'));
+        return back();
     }
 }

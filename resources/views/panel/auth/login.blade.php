@@ -123,6 +123,9 @@
                                               class="btn bg-gradient-info w-100 mt-4 mb-0">{{ __('Sign in') }}</button>
                                       </div>
                                   </form>
+                                  @if(env('APP_ENV') == 'developement')
+                                  <a href="{{ route('demo-login') }}" class="btn bg-gradient-info w-100 mt-4 mb-0">LOGIN DEMO</a>
+                                  @endif
                               </div>
 
                           </div>

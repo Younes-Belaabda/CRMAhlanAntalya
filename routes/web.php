@@ -1,5 +1,6 @@
 <?php
 
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\PaymentController;
 
@@ -13,6 +14,15 @@ use App\Http\Controllers\PaymentController;
 | contains the "web" middleware group. Now create something great!
 |
 */
+
+if(env('APP_ENV') == 'developement'){
+    Route::get('demo-login' , function(){
+        $email = 'team2025@mail.com';
+        $user = \App\User::where('email', '=', $email)->first();
+        Auth::loginUsingId($user->id);
+        return redirect()->route('login');
+    })->name('demo-login');
+}
 
 
 Route::get('/', 'LoginController@showLoginForm')->name('login');

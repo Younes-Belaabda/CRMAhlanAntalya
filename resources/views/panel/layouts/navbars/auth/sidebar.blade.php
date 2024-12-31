@@ -129,7 +129,7 @@
                 </a>
             </li>
             @endif
-            
+
             @if(Auth()->user()->type == 1)
             <!--<li class="nav-item mt-2">-->
             <!--    <h6 class="text-uppercase text-xs font-weight-bolder opacity-6">Accounts</h6>-->
@@ -258,6 +258,16 @@
                 </a>
             </li>
             @endif
+            <li class="nav-item">
+                <a class="nav-link"
+                    href="{{ route('panel.settings') }}">
+                    <div
+                        class="icon  bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa fa-cog ps-2 pe-2 text-center"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">settings</span>
+                </a>
+            </li>
             <li class="nav-item">
                 <a class="nav-link" href="{{ route('panel.logout') }}">
                     <div

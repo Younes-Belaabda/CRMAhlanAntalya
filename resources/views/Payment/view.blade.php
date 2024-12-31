@@ -117,7 +117,7 @@
 
 <body>
     <!-- partial:index.partial.html -->
-    <div class="wrapper" id="app">
+    <div class="wrapper" id="app" style="background-image: url({{ admin_url(setting('bg_image_payment_page')) }})">
         <?php
         $amount = $price;
         $currencyVal = '';
