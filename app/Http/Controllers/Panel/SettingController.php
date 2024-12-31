@@ -36,7 +36,7 @@ class SettingController extends Controller
                 $file->move(base_path('public/' . $filename), $file->getClientOriginalName());
                 $filename .= $file->getClientOriginalName();
                 $setting  = \App\Models\Setting::where('name' , $name)->first();
-                dd($setting);
+                dd($filename);
                 if($setting){
                     $setting->value = $filename;
                     $setting->save();
