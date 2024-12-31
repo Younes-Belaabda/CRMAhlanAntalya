@@ -1,0 +1,619 @@
+<?php
+
+namespace App\Http\Controllers\Panel;
+use Illuminate\Database\Eloquent\Builder;
+
+use App\Http\Controllers\Controller;
+use Illuminate\Http\Request;
+use App\User;
+use App\Models\Income;
+use App\Models\Movement;
+use App\Models\MovementUser;
+use App\Models\Countries;
+use Validator;
+use Carbon\Carbon;
+use App\Models\Notification;
+use App\Models\NotificationUser;
+
+class MovementController extends Controller
+{
+    public function __construct()
+    {
+       $this->middleware('auth');
+    }
+
+    public function index(Request $request)
+    {
+        $thisYear = date("Y");
+        $thisMonth = date("m");
+        \Artisan::call('ChangeDay:cron');
+
+        $user_m = User::find(@$request->d_user);
+        $user = auth()->user();
+        
+        
+        
+        $data_old = Movement::select("*" , \DB::raw("DATE_FORMAT(date, '%M %Y') new_date"), \DB::raw("DATE_FORMAT(date, '%Y') new_year"));
+        if($user->type == "1"){
+            $data_old = $data_old->wherehas("m_user" , function (Builder $query) use($user){
+                $query->where("type" ,"!=", "5");
+            });
+        }else{
+            $data_old = $data_old->wherehas("users" , function (Builder $query) use($user){
+                $query->where("id" , $user->id);
+            });
+        }
+        if(isset($request->d_user) && $request->d_user != null){
+            if(@$user_m->type == "1"){
+                $data_old = $data_old->where("user_id" , $request->d_user);
+            }else{
+                $data_old = $data_old->wherehas("users" , function (Builder $query) use($user , $request){
+                    $query->where("id" , $request->d_user);
+                });
+            }
+        }
+
+        if($request->country_id != null){
+            $data_old = $data_old->where("country_id" , $request->country_id);
+        }
+        if($request->m_type != null){
+            $data_old = $data_old->where("type" , $request->m_type);
+        }
+        if($request->type != null){
+            $data_old = $data_old->where("u.type" , $request->type);
+        }
+        
+        $fdate=null;
+        $tdate=null;
+        
+        if($request->from_date != null && $request->to_date != null){
+            $fdate=$request->from_date;
+            $tdate=$request->to_date;
+        }
+        if($request->from_date == null && $request->to_date == null){
+            $fdate=$thisYear."-".$thisMonth."-01";
+            $tdate=$thisYear."-".$thisMonth."-31";
+        }
+        $data_old = $data_old->orderby("date" , "asc")->whereNotBetween("date", [$fdate,$tdate])->where("to_date",">",$fdate)->where("to_date","<",$tdate)->get();
+        
+        $data = Movement::select("*" , \DB::raw("DATE_FORMAT(date, '%M %Y') new_date"), \DB::raw("DATE_FORMAT(date, '%Y') new_year"));
+        // $user->type="2";
+        // $user->id="3";
+        if($user->type == "1"){
+            $data = $data->wherehas("m_user" , function (Builder $query) use($user){
+                $query->where("type" ,"!=", "5");
+            });
+        }else{
+            $data = $data->wherehas("users" , function (Builder $query) use($user){
+                $query->where("id" , $user->id);
+            });
+        }
+        if(isset($request->d_user) && $request->d_user != null){
+            if(@$user_m->type == "1"){
+                $data = $data->where("user_id" , $request->d_user);
+            }else{
+                $data = $data->wherehas("users" , function (Builder $query) use($user , $request){
+                    $query->where("id" , $request->d_user);
+                });
+            }
+        }
+
+        if($request->country_id != null){
+            $data = $data->where("country_id" , $request->country_id);
+        }
+        if($request->m_type != null){
+            $data = $data->where("type" , $request->m_type);
+        }
+        if($request->type != null){
+            $data = $data->where("u.type" , $request->type);
+            // $data = $data->wherehas("users" , function (Builder $query) use($user , $request){
+            //     $query->where("users.type" , $request->type);
+            // });
+        }
+        
+        
+        
+        if($request->from_date != null && $request->to_date == null){
+            $data = $data->where("date" , $request->from_date);
+        }
+        if($request->from_date != null && $request->to_date != null){
+            $data = $data->whereBetween("date" , [$request->from_date,$request->to_date]);
+        }
+        if($request->from_date == null && $request->to_date == null){
+            $data = $data->whereYear("date" , $thisYear)->whereMonth("date",$thisMonth);
+        }
+        $data_forant = $data;
+        
+        
+        $ahlandatas = collect();
+        $ispartner = User::find($request->d_user);
+        
+        if(isset($ispartner) && $ispartner->type == 3){
+            $incs =  Income::where("for_id",$ispartner->id)->where("price_type","$")->get();
+            $b1 = 0;
+            $b2 = 0;
+            foreach($incs as $inc){
+                if($inc->movement_id == null){
+                    $b1 += $inc->price;
+                }
+            }
+            
+            $moves =  Movement::wherehas("users" , function (Builder $query) use($ispartner){
+                $query->where("id" , $ispartner->id);
+            })
+            ->where("price_type" , "$");
+            $t1 = $moves;
+            $t2 = $moves;
+            $t2 = $t2->sum("revenue_partner");
+            $t1 = $t1->where("paybyus" , "1")->sum("price");
+            //dd($t2);
+            
+            $ispartner->blance = ($b1+$t2)-($b2+$t1);
+        }
+            
+        $datas = $data->orderby("date" , "asc")->orderby("user_id" , "asc")->orderby("type" , "asc")->get();
+        $data_year = $data->orderby("date" , "asc")->groupby("new_date")->get();
+        
+        if(isset($request->d_user) && $request->d_user != null){
+            
+            if($ispartner != null && $ispartner->type == 5){
+                $ahlandata = Movement::select("*" , \DB::raw("DATE_FORMAT(date, '%M %Y') new_date"), \DB::raw("DATE_FORMAT(date, '%Y') new_year"));
+                
+                $ahlandata = $ahlandata->wherehas("users" , function (Builder $query) use($user){
+                    $query->where("id" , 19);
+                });
+                
+                if($request->country_id != null){
+                    $ahlandata = $ahlandata->where("country_id" , $request->country_id);
+                }
+                if($request->m_type != null){
+                    $ahlandata = $ahlandata->where("type" , $request->m_type);
+                }
+                if($request->type != null){
+                    $ahlandata = $ahlandata->wherehas("users" , function (Builder $query) use($user , $request){
+                        $query->where("users.type" , $request->type);
+                    });
+                }
+                if($request->from_date != null && $request->to_date == null){
+                    $ahlandata = $ahlandata->where("date" , $request->from_date);
+                }
+                if($request->from_date != null && $request->to_date != null){
+                    $ahlandata = $ahlandata->whereBetween("date" , [$request->from_date,$request->to_date]);
+                }
+                if($request->from_date == null && $request->to_date == null){
+                    $ahlandata = $ahlandata->whereYear("date" , $thisYear);
+                }
+                $ahlandata = $ahlandata->orderby("date" , "asc")->get();
+                //dd($ahlandata);
+                $data_years = $data_year;
+                $ahlandatas = collect();
+                foreach($data_years as $item){
+                    $items = collect();
+                    foreach($ahlandata as $it){
+                        if($it->new_date == $item->new_date){
+                            //var_dump($item->new_date);
+                            $items->push($it);
+                        }
+                    }
+                    $ahlandatas->push([$item->new_date => $items]);
+                    //dd($items);
+                }
+            }
+        }
+        //dd($data->get());
+        
+        
+        $types = collect();
+        $types->push("Driver Tours" ,"Group Tours" ,"Transfers" , "hotels" ,"Other Services");
+        $data = collect();
+        foreach($data_year as $item){
+            $items = collect();
+            foreach($datas as $it){
+                if($it->new_date == $item->new_date){
+                    //var_dump($item->new_date);
+                    $items->push($it);
+                }
+            }
+            $data->push([$item->new_date => $items]);
+            //dd($items);
+        }
+        $users = User::get();
+        $countries = Countries::get();
+        $OldCount = Movement::query();
+        
+        if($request->from_date != null && $request->to_date == null){
+            $OldCount = $OldCount->whereYear("date" , $thisYear)->where("date" ,"<", $request->from_date);
+        }
+        if($request->from_date != null && $request->to_date != null){
+            $OldCount = $OldCount->whereYear("date" , $thisYear)->where("date" ,"<", $request->from_date);
+        }
+        if($request->from_date == null && $request->to_date == null){
+            $OldCount = $OldCount->whereYear("date" , $thisYear)->whereMonth("date","<",$thisMonth);
+        }
+        if(isset($request->d_user) && $request->d_user != null){
+            if(@$user_m->type == "1"){
+                $OldCount = $OldCount->where("user_id" , $request->d_user);
+            }else{
+                $OldCount = $OldCount->wherehas("users" , function (Builder $query) use($user , $request){
+                    $query->where("id" , $request->d_user);
+                });
+            }
+        }
+        $OldCount = $OldCount->count();
+        
+        $NowCount = Movement::query();
+        if($request->from_date != null && $request->to_date == null){
+            $NowCount = $NowCount->where("date" , $request->from_date);
+        }
+        if($request->from_date != null && $request->to_date != null){
+            $NowCount = $NowCount->whereBetween("date" , [$request->from_date,$request->to_date]);
+        }
+        if($request->from_date == null && $request->to_date == null){
+            $NowCount = $NowCount->whereYear("date" , $thisYear)->whereMonth("date",$thisMonth);
+        }
+        
+        if(isset($request->d_user) && $request->d_user != null){
+            if(@$user_m->type == "1"){
+                $NowCount = $NowCount->where("user_id" , $request->d_user);
+            }else{
+                $NowCount = $NowCount->wherehas("users" , function (Builder $query) use($user , $request){
+                    $query->where("id" , $request->d_user);
+                });
+            }
+        }
+        
+        $NowCount = $NowCount->count();
+        
+        
+        $data_income = Income::
+            select(
+                "*",
+                \DB::raw("DATE_FORMAT(date, '%M %Y') new_date")
+            );
+            
+        if($request->from_date != null && $request->to_date == null){
+            $data_income = $data_income->where("date" , $request->from_date);
+        }
+        if($request->from_date != null && $request->to_date != null){
+            $data_income = $data_income->whereBetween("date" , [$request->from_date,$request->to_date]);
+        }
+
+        if($request->from_date == null && $request->to_date == null){
+            $data_income = $data_income->whereYear("date" , $thisYear)->whereMonth("date",$thisMonth);
+        }
+        
+        $data_income = $data_income->orderby("new_date" , "DESC");
+        $data_e = $data_income->where("for_id" , $request->d_user)->get();
+        //dd($data_e);
+        $data_y = $data_income->where("for_id" , $request->d_user)->where("type","Income")->groupby("new_date")->get();
+        
+        $moves_a =  Movement::select("*",\DB::raw("DATE_FORMAT(date, '%M %Y') new_date"));
+                
+        if($request->from_date != null && $request->to_date == null){
+            $moves_a = $moves_a->where("date" , $request->from_date);
+        }
+        if($request->from_date != null && $request->to_date != null){
+            $moves_a = $moves_a->whereBetween("date" , [$request->from_date,$request->to_date]);
+        }
+
+        if($request->from_date == null && $request->to_date == null){
+            $moves_a = $moves_a->whereYear("date" , $thisYear)->whereMonth("date",$thisMonth);
+        }
+        
+        if(isset($request->d_user) && $request->d_user != null){
+            if(@$user_m->type == "1"){
+                $moves_a = $moves_a->where("user_id" , $request->d_user);
+            }else{
+                $moves_a = $moves_a->wherehas("users" , function (Builder $query) use($user , $request){
+                    $query->where("id" , $request->d_user);
+                });
+            }
+        }
+
+        
+        $moves_data = $moves_a->orderby("date" , "asc")->get();
+        $moves_data_year = $moves_a->groupby("new_date")->get();
+        
+        $request = $request->all();
+        return view('panel.Movement.view' , compact('moves_data_year',"data_old",'moves_data','data_y','data_e','data','user_m','ispartner','NowCount','OldCount','ahlandatas','users','countries','request' ,"types"));
+    }
+
+
+    public function paid(Request $request)
+    {
+        
+        $thisYear = date("Y");
+        $thisMonth = date("m");
+        \Artisan::call('ChangeDay:cron');
+
+        $user_d = User::find(@$request->d_user);
+        
+        if($user_d->type != 2){
+            return redirect()->back()->with('danger' , __('Sorry This Not Driver'));
+        }
+        
+        $data = Movement::select("*" , \DB::raw("DATE_FORMAT(date, '%M %Y') new_date"), \DB::raw("DATE_FORMAT(date, '%Y') new_year"));
+        
+        if(isset($request->d_user) && $request->d_user != null){
+            $data = $data->wherehas("users" , function (Builder $query) use($request){
+                $query->where("id" , $request->d_user);
+            });
+        }
+
+        if($request->country_id != null){
+            $data = $data->where("country_id" , $request->country_id);
+        }
+        if($request->m_type != null){
+            $data = $data->where("type" , $request->m_type);
+        }
+        if($request->type != null){
+            $data = $data->wherehas("users" , function (Builder $query) use( $request){
+                $query->where("users.type" , $request->type);
+            });
+        }
+        if($request->from_date != null && $request->to_date == null){
+            $data = $data->where("date" , $request->from_date);
+        }
+        if($request->from_date != null && $request->to_date != null){
+            $data = $data->whereBetween("date" , [$request->from_date,$request->to_date]);
+        }
+        if($request->from_date == null && $request->to_date == null){
+            $data = $data->whereYear("date" , $thisYear)->whereMonth("date",$thisMonth);
+        }
+        
+        $data_year = $data->where("status","0")->orderby("date" , "asc")->get();
+        foreach($data_year as $item){
+            if($item->paybyus == 0){
+                $item->leader_paid = 1;
+                $item->status = 1;
+            }elseif($item->paybyus == 1 && $item->sender_paid == 1){
+                $item->leader_paid = 1;
+                $item->status = 1;
+            }else{
+                $item->leader_paid = 1;
+            }
+            $item->save();
+        }
+        
+        return redirect()->back()->with('success' , __('Success'));
+    }
+    
+    public function change_status($id)
+    {
+        $partners = Movement::find($id);
+        if($id != false && $partners == null){
+          return redirect()->back()->with('danger' , __('Error Not Found'));
+        }else{
+          $partners->completed = $partners->completed == 1 ? '0' : '1';
+            if($partners->completed == 1){
+                $partners->color = 3;
+            }else{
+                $partners->color = 1;
+            }
+          if($partners->save()){
+            return redirect()->back()->with('success' , __('Success '));
+          }else{
+            return redirect()->back()->with('danger' , __('Error Not Change'));
+          }
+        }
+        return redirect()->back()->with('danger' , __('Error  Not Found'));
+    }
+
+    public function delete($id)
+    {
+        $item = Movement::find($id);
+        return (isset($item) && $item->delete()) ? $this->response_api(true, 'The deletion was successful') : $this->response_api(false, 'Error');
+    }
+
+    public function add_new($id = false)
+    {
+        $showDemoNotification = false;
+        $showSuccesNotification  = false;
+        $data = Movement::find($id);
+        if($id != false && $data == null){
+          return redirect()->back()->with('danger' , __('Error User Account Not Found'));
+        }
+
+        $users = User::where('type' , "!=","1")->get();
+        $nusers = User::get();
+
+        $countries = Countries::get();
+        return view('panel.Movement.add_new' , compact('data','countries' ,'nusers','users', 'id' ,'showDemoNotification' ,'showSuccesNotification'));
+    }
+
+    public function save_new(Request $request ,$id = false)
+    {
+      if($id){
+        $validator = Validator::make($request->all() ,[
+            'customer' => 'required|max:255',
+            'date' => 'required',
+            'description' => 'required|max:255',
+            'price' => 'required',
+            'price_type' => 'required',
+            'type' => 'required',
+            //'commission_type' => 'required',
+            //'status' => 'required',
+        ]);
+      }else{
+        $validator = Validator::make($request->all() ,[
+            'customer' => 'required|max:255',
+            'date' => 'required',
+            'description' => 'required|max:255',
+            'price' => 'required',
+            'price_type' => 'required',
+            'type' => 'required',
+            //'commission_type' => 'required',
+            //'status' => 'required',
+        ]);
+      }
+
+    if ($validator->fails()){
+        return redirect()->back()->withInput()->withErrors($validator);
+    }
+
+      if($request->ntext != null || $request->to_user_id != null){
+        $validator = Validator::make($request->all() ,[
+            'ntext' => 'required|max:255',
+            'to_user_id' => 'required',
+        ]);
+      }
+
+      if ($validator->fails()){
+          return redirect()->back()->withInput()->withErrors($validator);
+      }
+
+
+      if($id){
+        $item = Movement::find($id);
+      }else{
+        $item = new Movement;
+      }
+      $item->customer = $request->customer;
+      $item->date = $request->date;
+      $item->to_date = $request->to_date;
+      $item->description = $request->description;
+      $item->price = $request->price;
+      $item->price_type = $request->price_type;
+      $item->net = $request->net == null ? "0" : $request->net;
+      $item->net_tl = $request->net_tl == null ? "0" : $request->net_tl;
+      $item->revenue = $request->revenue == null ? "0" : $request->revenue;
+      $item->revenue_partner = @$request->revenue_partner == null ? null : @$request->revenue_partner;
+      $item->commission = $request->commission == null ? "0" : $request->commission;
+      $item->commission_type = $request->commission_type == null ? null : $request->commission_type;
+      $item->admin_commission = $request->admin_commission == null ? "0" : $request->admin_commission;
+      $item->admin_commission_type = $request->admin_commission_type == null ? null : $request->admin_commission_type;
+      $item->type = $request->type;
+      $item->tax = $request->tax == null ? "0" : $request->tax;
+      $item->paybyus = $request->paybyus == null ? "0" : $request->paybyus;
+      $item->sender_paid = $request->sender_paid == null ? "0" : $request->sender_paid;
+      $item->leader_paid = $request->leader_paid == null ? "0" : $request->leader_paid;
+      $item->completed = $request->completed == null ? "0" : $request->completed;
+      $item->color = $request->completed == 1 ? "3" : $item->color;
+      $item->country_id = $request->country_id;
+      $item->status = $request->status == null ? "0" : $request->status;
+      $item->commit = $request->commit == null ? "0" : $request->commit;
+      //if($id){
+        $item->user_id = $request->user_id == null ?  auth()->user()->id : $request->user_id ;
+        $item->admin_partner = $request->admin_partner == null ? null : $request->admin_partner;
+
+      //}
+      
+    //   if($item->paybyus == "1" && $item->status == "1" && ($item->sender_paid != 1 || $item->leader_paid != 1)){
+    //     return redirect()->back()->with('danger' , __('Error Cant Change Total Completed When Sender Or Leader Not Finish '));
+    //   }
+      $item->save();
+
+      if($item){
+          if($item->status == 0){
+              Income::where("movement_id",$id)->delete();
+          }
+        if($item->status == 1 && $item->paybyus == 1){
+            $income = Income::where("movement_id",$id)->where("type" , "Expenses")->first();
+            if(!$income){
+                $income = new Income;
+            }
+            if($item->net_tl != 0){
+            $income->price = $item->net_tl;
+            $income->price_type = "TL";
+            }else{
+            $income->price = $item->net;
+            $income->price_type = $item->price_type;
+            }
+            $income->date = $item->date;
+            $income->note = $item->customer;
+            $income->for_id = $item->users->wherein("type" , [2,4,5])->first()->id;
+            $income->type = "Expenses";
+            $income->status = $item->status;
+            $income->user_id = $item->user_id;
+            $income->movement_id = $item->movement_id;
+            $income->note = $item->customer;
+            $income->save();
+
+            $income = Income::where("movement_id",$id)->where("com", "0")->where("type" , "Income")->first();
+            if(!$income){
+                $income = new Income;
+            }
+            if($item->price_type == $item->commission_type ){
+                $income->price = $item->price + $item->commission;
+            }else{
+                $income->price = $item->price;
+            }
+            $user_id = null;
+            if(isset($item->users->wherein("type" , [3,5])->first()->id)){
+                $user_id = $item->users->wherein("type" , [3,5])->first()->id;
+            }else{
+                $user_id = $item->users->first()->id;
+            }
+            $income->price_type = $item->price_type;
+            $income->date = $item->date;
+            $income->note = $item->customer;
+            $income->for_id = $user_id;
+            $income->type = "Income";
+            $income->status = $item->status;
+            $income->user_id = $item->user_id;
+            $income->movement_id = $item->movement_id;
+            $income->note = $item->customer;
+            $income->save();
+            
+            if($item->price_type != $item->commission_type && $item->commission != 0){
+                $income = Income::where("movement_id",$id)->where("com", "1")->where("type" , "Income")->first();
+                if(!$income){
+                    $income = new Income;
+                }
+                
+                $income->price = $item->commission;
+                $income->price_type = $item->commission_type;
+                $income->date = $item->date;
+                $income->note = $item->customer;
+                $income->for_id = $item->users->wherein("type" , [3,5])->first()->id;
+                $income->type = "Income";
+                $income->status = $item->status;
+                $income->user_id = $item->user_id;
+                $income->com = 1;
+                $income->movement_id = $item->movement_id;
+                $income->note = $item->customer;
+                $income->save();
+            }
+        }
+        MovementUser::where("movement_id",$item->movement_id)->delete();
+        //dd($request->users);
+        //$request->users = explode(",",$request->users);
+        // foreach($request->users as $uitem){
+        //     MovementUser::create(["movement_id"=>$item->movement_id,"user_id"=>$uitem]);
+        // }
+        if(isset($request->s_users) && $request->s_users != null ){
+            MovementUser::create(["movement_id"=>$item->movement_id,"user_id"=>$request->s_users , "type"=>1]);
+        }
+        if(isset($request->l_users) && $request->l_users != null ){
+            MovementUser::create(["movement_id"=>$item->movement_id,"user_id"=>$request->l_users , "type"=>0]);
+        }
+        
+
+        if($request->ntext != null && $request->to_user_id != null){
+            $nitem = Notification::where("movement_id",$item->movement_id)->first();
+            if($nitem==null){
+                $nitem = new Notification;
+            }
+            $nitem->text = $request->ntext;
+            $nitem->type = 1;
+            $nitem->movement_id = $item->movement_id;
+            $nitem->from_user_id = auth()->user()->id;
+            //$nitem->to_user_id = ;
+            $nitem->status = 0;
+            $nitem->user_id = auth()->user()->id;
+            $nitem->save();
+            
+            NotificationUser::where("notification_id" , $nitem->notification_id)->delete();
+            foreach($request->to_user_id as $nuser){
+                NotificationUser::create(["notification_id"=>$nitem->notification_id,"user_id"=>$nuser]);
+            }
+        }
+        if($id){
+        return redirect("admin/movement")->with('success' , __('UpDated'));
+        }
+        return redirect("admin/movement")->with('success' , __('Created'));
+      }
+      return redirect()->back()->with('danger' , __('Error Not Created'));
+    }
+
+}

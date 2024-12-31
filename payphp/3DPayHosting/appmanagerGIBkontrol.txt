@@ -1,0 +1,1245 @@
+DROP VIEW APPMANAGER.GIB_EXA;
+
+/* Formatted on 22.06.2018 15:45:20 (QP5 v5.269.14213.34769) */
+CREATE OR REPLACE FORCE VIEW APPMANAGER.GIB_EXA
+(
+   BANKA,
+   SIRA,
+   TIMEOUT_ADET,
+   CORE_ADET,
+   "3dhata_adet",
+   "order_lock",
+   NORMAL_ADET,
+   TOTAL_TIME_ORT,
+   HOST_TIME,
+   NESTPAY_TIME,
+   MAX_TIME,
+   MAX_HOST_TIME,
+   MAX_NESTPAY_TIME,
+   MIN_TIME,
+   MIN_HOST_TIME,
+   MIN_NESTPAY_TIME,
+   STDDEVELAPSEDTIME,
+   "3d_adet",
+   "3d_total_time_ort",
+   "3d_host_time",
+   "3d_nestpay_time",
+   "3d_max_time",
+   "3d_max_host_time",
+   "3d_max_nestpay_time",
+   "3d_min_time",
+   "3d_min_host_time",
+   "3d_min_nestpay_time",
+   "3dstddev",
+   REVERSALADET,
+   "queryDate"
+)
+AS
+     SELECT "BANKA",
+            "SIRA",
+            "TIMEOUT_ADET",
+            "CORE_ADET",
+            "3dhata_adet",
+            "order_lock",
+            "NORMAL_ADET",
+            "TOTAL_TIME_ORT",
+            "HOST_TIME",
+            "NESTPAY_TIME",
+            "MAX_TIME",
+            "MAX_HOST_TIME",
+            "MAX_NESTPAY_TIME",
+            "MIN_TIME",
+            "MIN_HOST_TIME",
+            "MIN_NESTPAY_TIME",
+            "STDDEVELAPSEDTIME",
+              "3d_adet"
+            + CASE
+                 WHEN TO_CHAR (SYSDATE, 'HH24') BETWEEN 0 AND 8 THEN 1
+                 WHEN TO_CHAR (SYSDATE, 'HH24') BETWEEN 9 AND 17 THEN 0
+                 WHEN TO_CHAR (SYSDATE, 'HH24') BETWEEN 18 AND 24 THEN 1
+              END
+               AS "3d_adet",
+            "3d_total_time_ort",
+            "3d_host_time",
+            "3d_nestpay_time",
+            "3d_max_time",
+            "3d_max_host_time",
+            "3d_max_nestpay_time",
+            "3d_min_time",
+            "3d_min_host_time",
+            "3d_min_nestpay_time",
+            "3dstddev",
+            reversaladet,
+            SYSDATE AS "queryDate"
+       FROM (SELECT a.banka,
+                    '1' sira,
+                    timeout_adet,
+                    core_adet,
+                    e.*,
+                    s.*,
+                    b.normal_adet,
+                    b.total_time_ort,
+                    b.host_time,
+                    b.nestpay_time,
+                    b.max_time,
+                    b.max_host_time,
+                    b.max_nestpay_time,
+                    b.min_time,
+                    b.min_host_time,
+                    b.min_nestpay_time,
+                    b.stddevelapsedtime,
+                    d.*,
+                    f.reversaladet
+               FROM                                        --baglantı hataları
+                    (SELECT 'AKBANK GIB' banka, COUNT (*) timeout_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     (    Transtatus = 'NO'
+                                 AND errorcode IN ('BM-9101',
+                                                   'BM-9102',
+                                                   'BM-9103',
+                                                   'BM-1002',
+                                                   'CORE-1003',
+                                                   'BM-1006',
+                                                   'BM-1007',
+                                                   'CORE-1005'))
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acqrespcode IS NOT NULL
+                            AND acquid = 1
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '1002')) a,
+                    --core hataları
+                    (SELECT COUNT (*) core_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus IN ('NO', 'RE')
+                            AND errorcode IN ('CORE-1000',
+                                              'CORE-1001',
+                                              'CORE-1002',
+                                              'CORE-1003',
+                                              'CORE-1004',
+                                              'CORE-1005',
+                                              'ISO8583-91')
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 1
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '1002')) c,
+                    -- kilitli sipariş
+                    (SELECT COUNT (*) "order_lock"
+                       FROM dmrl.fimorderlock
+                      WHERE     lock_ts > SYSDATE - (3 / 24 + 15 / 1440)
+                            AND acquid = 1
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '1002')) s,
+                    --3d hataları
+                    (SELECT COUNT (*) "3dhata_adet"
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus = 'NO'
+                            AND mdstatus IN (5,
+                                             6,
+                                             7,
+                                             8,
+                                             9,
+                                             0)
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 1
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '1002')) e,
+                    -- normal tx
+                    (SELECT 'AKBANK GIB' banka,
+                            COUNT (*) normal_adet,
+                            ROUND (AVG (elapsed_time)) AS total_time_ort,
+                            ROUND (AVG (host_time)) AS host_time,
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS nestpay_time,
+                            MAX (elapsed_time) AS max_time,
+                            MAX (host_time) AS max_host_time,
+                            MAX (elapsed_time - host_time) AS max_nestpay_time,
+                            MIN (elapsed_time) AS min_time,
+                            MIN (host_time) AS min_host_time,
+                            MIN (elapsed_time - host_time) AS min_nestpay_time,
+                            STDDEV (elapsed_time) stddevelapsedtime
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      --and nvl(mdstatus,'1') <> '1'
+                                      AND acquid = 1
+                                      AND acqrespcode IS NOT NULL
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '1002')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 76
+                                                        ) b,
+                    -- 3d işlemler
+                    (SELECT COUNT (*) "3d_adet",
+                            ROUND (AVG (elapsed_time)) AS "3d_total_time_ort",
+                            ROUND (AVG (host_time)) AS "3d_host_time",
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS "3d_nestpay_time",
+                            MAX (elapsed_time) AS "3d_max_time",
+                            MAX (host_time) AS "3d_max_host_time",
+                            MAX (elapsed_time - host_time)
+                               AS "3d_max_nestpay_time",
+                            MIN (elapsed_time) AS "3d_min_time",
+                            MIN (host_time) AS "3d_min_host_time",
+                            MIN (elapsed_time - host_time)
+                               AS "3d_min_nestpay_time",
+                            STDDEV (elapsed_time) "3dstddev"
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      AND mdstatus IN ('1',
+                                                       '2',
+                                                       '3',
+                                                       '4')
+                                      AND acquid = 1
+                                      AND acqrespcode IS NOT NULL
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '1002')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 76
+                                                        ) d,
+                    (SELECT COUNT (*) reversaladet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427) t,
+                            dmrl.fimautovoid v
+                      WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND t.tranuid = v.tranuid
+                            AND t.errorcode IN ('BM-9101',
+                                                'BM-9102',
+                                                'BM-9103',
+                                                'BM-1002',
+                                                'CORE-1003',
+                                                'BM-1006',
+                                                'BM-1007',
+                                                'CORE-1005')
+                            AND t.acquid = 1
+                            AND t.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '1002')) f
+             --finansbank gib
+             UNION
+             SELECT a.banka,
+                    '3' sira,
+                    timeout_adet,
+                    core_adet,
+                    e.*,
+                    s.*,
+                    b.normal_adet,
+                    b.total_time_ort,
+                    b.host_time,
+                    b.nestpay_time,
+                    b.max_time,
+                    b.max_host_time,
+                    b.max_nestpay_time,
+                    b.min_time,
+                    b.min_host_time,
+                    b.min_nestpay_time,
+                    b.stddevelapsedtime,
+                    d.*,
+                    f.reversaladet
+               FROM                                        --baglantı hataları
+                    (SELECT 'FINANSBANK GIB' banka, COUNT (*) timeout_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     (    Transtatus = 'NO'
+                                 AND errorcode IN ('BM-9101',
+                                                   'BM-9102',
+                                                   'BM-9103',
+                                                   'BM-1002',
+                                                   'CORE-1003',
+                                                   'BM-1006',
+                                                   'BM-1007',
+                                                   'CORE-1005'))
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 6
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '6003')) a,
+                    --core hataları
+                    (SELECT COUNT (*) core_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus IN ('NO', 'RE')
+                            AND errorcode IN ('CORE-1000',
+                                              'CORE-1001',
+                                              'CORE-1002',
+                                              'CORE-1003',
+                                              'CORE-1004',
+                                              'CORE-1005',
+                                              'ISO8583-91')
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 6
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '6003')) c,
+                    -- kilitli sipariş
+                    (SELECT COUNT (*) "order_lock"
+                       FROM dmrl.fimorderlock
+                      WHERE     lock_ts > SYSDATE - (3 / 24 + 15 / 1440)
+                            AND acquid = 6
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '6003')) s,
+                    --3d hataları
+                    (SELECT COUNT (*) "3dhata_adet"
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus = 'NO'
+                            AND mdstatus IN (5,
+                                             6,
+                                             7,
+                                             8,
+                                             9,
+                                             0)
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 6
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '6003')) e,
+                    -- normal tx
+                    (SELECT 'FINANSBANK GIB' banka,
+                            COUNT (*) normal_adet,
+                            ROUND (AVG (elapsed_time)) AS total_time_ort,
+                            ROUND (AVG (host_time)) AS host_time,
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS nestpay_time,
+                            MAX (elapsed_time) AS max_time,
+                            MAX (host_time) AS max_host_time,
+                            MAX (elapsed_time - host_time) AS max_nestpay_time,
+                            MIN (elapsed_time) AS min_time,
+                            MIN (host_time) AS min_host_time,
+                            MIN (elapsed_time - host_time) AS min_nestpay_time,
+                            STDDEV (elapsed_time) stddevelapsedtime
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      --and nvl(mdstatus,'1') <> '1'
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 6
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '6003')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 41
+                                                        ) b,
+                    -- 3d işlemler
+                    (SELECT COUNT (*) "3d_adet",
+                            ROUND (AVG (elapsed_time)) AS "3d_total_time_ort",
+                            ROUND (AVG (host_time)) AS "3d_host_time",
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS "3d_nestpay_time",
+                            MAX (elapsed_time) AS "3d_max_time",
+                            MAX (host_time) AS "3d_max_host_time",
+                            MAX (elapsed_time - host_time)
+                               AS "3d_max_nestpay_time",
+                            MIN (elapsed_time) AS "3d_min_time",
+                            MIN (host_time) AS "3d_min_host_time",
+                            MIN (elapsed_time - host_time)
+                               AS "3d_min_nestpay_time",
+                            STDDEV (elapsed_time) "3dstddev"
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      AND mdstatus IN ('1',
+                                                       '2',
+                                                       '3',
+                                                       '4')
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 6
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '6003')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 41
+                                                        ) d,
+                    (SELECT COUNT (*) reversaladet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427) t,
+                            dmrl.fimautovoid v
+                      WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND t.tranuid = v.tranuid
+                            AND t.errorcode IN ('BM-9101',
+                                                'BM-9102',
+                                                'BM-9103',
+                                                'BM-1002',
+                                                'CORE-1003',
+                                                'BM-1006',
+                                                'BM-1007',
+                                                'CORE-1005')
+                            AND t.acquid = 6
+                            AND t.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '6003')) f
+             --teb gib
+             UNION
+             SELECT a.banka,
+                    '4' sira,
+                    timeout_adet,
+                    core_adet,
+                    e.*,
+                    s.*,
+                    b.normal_adet,
+                    b.total_time_ort,
+                    b.host_time,
+                    b.nestpay_time,
+                    b.max_time,
+                    b.max_host_time,
+                    b.max_nestpay_time,
+                    b.min_time,
+                    b.min_host_time,
+                    b.min_nestpay_time,
+                    b.stddevelapsedtime,
+                    d.*,
+                    f.reversaladet
+               FROM                                        --baglantı hataları
+                    (SELECT 'TEB GIB' banka, COUNT (*) timeout_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     (    Transtatus = 'NO'
+                                 AND errorcode IN ('BM-9101',
+                                                   'BM-9102',
+                                                   'BM-9103',
+                                                   'BM-1002',
+                                                   'CORE-1003',
+                                                   'BM-1006',
+                                                   'BM-1007',
+                                                   'CORE-1005'))
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 4
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '4001')) a,
+                    --core hataları
+                    (SELECT COUNT (*) core_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus IN ('NO', 'RE')
+                            AND errorcode IN ('CORE-1000',
+                                              'CORE-1001',
+                                              'CORE-1002',
+                                              'CORE-1003',
+                                              'CORE-1004',
+                                              'CORE-1005',
+                                              'ISO8583-91')
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 4
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '4001')) c,
+                    -- kilitli sipariş
+                    (SELECT COUNT (*) "order_lock"
+                       FROM dmrl.fimorderlock
+                      WHERE     lock_ts > SYSDATE - (3 / 24 + 15 / 1440)
+                            AND acquid = 4
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '4001')) s,
+                    --3d hataları
+                    (SELECT COUNT (*) "3dhata_adet"
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus = 'NO'
+                            AND mdstatus IN (5,
+                                             6,
+                                             7,
+                                             8,
+                                             9,
+                                             0)
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 4
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '4001')) e,
+                    -- normal tx
+                    (SELECT 'TEB' banka,
+                            COUNT (*) normal_adet,
+                            ROUND (AVG (elapsed_time)) AS total_time_ort,
+                            ROUND (AVG (host_time)) AS host_time,
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS nestpay_time,
+                            MAX (elapsed_time) AS max_time,
+                            MAX (host_time) AS max_host_time,
+                            MAX (elapsed_time - host_time) AS max_nestpay_time,
+                            MIN (elapsed_time) AS min_time,
+                            MIN (host_time) AS min_host_time,
+                            MIN (elapsed_time - host_time) AS min_nestpay_time,
+                            STDDEV (elapsed_time) stddevelapsedtime
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      --and nvl(mdstatus,'1') <> '1'
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 4
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '4001')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) b,
+                    -- 3d işlemler
+                    (SELECT COUNT (*) "3d_adet",
+                            ROUND (AVG (elapsed_time)) AS "3d_total_time_ort",
+                            ROUND (AVG (host_time)) AS "3d_host_time",
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS "3d_nestpay_time",
+                            MAX (elapsed_time) AS "3d_max_time",
+                            MAX (host_time) AS "3d_max_host_time",
+                            MAX (elapsed_time - host_time)
+                               AS "3d_max_nestpay_time",
+                            MIN (elapsed_time) AS "3d_min_time",
+                            MIN (host_time) AS "3d_min_host_time",
+                            MIN (elapsed_time - host_time)
+                               AS "3d_min_nestpay_time",
+                            STDDEV (elapsed_time) "3dstddev"
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      AND mdstatus IN ('1',
+                                                       '2',
+                                                       '3',
+                                                       '4')
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 4
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '4001')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) d,
+                    (SELECT COUNT (*) reversaladet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427) t,
+                            dmrl.fimautovoid v
+                      WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND t.tranuid = v.tranuid
+                            AND t.errorcode IN ('BM-9101',
+                                                'BM-9102',
+                                                'BM-9103',
+                                                'BM-1002',
+                                                'CORE-1003',
+                                                'BM-1006',
+                                                'BM-1007',
+                                                'CORE-1005')
+                            AND t.acquid = 4
+                            AND t.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '4001')) f
+             -- HALKBANK GIB
+             UNION
+             SELECT a.banka,
+                    '5' sira,
+                    timeout_adet,
+                    core_adet,
+                    e.*,
+                    s.*,
+                    b.normal_adet,
+                    b.total_time_ort,
+                    b.host_time,
+                    b.nestpay_time,
+                    b.max_time,
+                    b.max_host_time,
+                    b.max_nestpay_time,
+                    b.min_time,
+                    b.min_host_time,
+                    b.min_nestpay_time,
+                    b.stddevelapsedtime,
+                    d.*,
+                    f.reversaladet
+               FROM                                        --baglantı hataları
+                    (SELECT 'HALKBANK GIB' banka, COUNT (*) timeout_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     (    Transtatus = 'NO'
+                                 AND errorcode IN ('BM-9101',
+                                                   'BM-9102',
+                                                   'BM-9103',
+                                                   'BM-1002',
+                                                   'CORE-1003',
+                                                   'BM-1006',
+                                                   'BM-1007',
+                                                   'CORE-1005'))
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 5
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '5001')) a,
+                    --core hataları
+                    (SELECT COUNT (*) core_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus IN ('NO', 'RE')
+                            AND errorcode IN ('CORE-1000',
+                                              'CORE-1001',
+                                              'CORE-1002',
+                                              'CORE-1003',
+                                              'CORE-1004',
+                                              'CORE-1005',
+                                              'ISO8583-91')
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 5
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '5001')) c,
+                    -- kilitli sipariş
+                    (SELECT COUNT (*) "order_lock"
+                       FROM dmrl.fimorderlock
+                      WHERE     lock_ts > SYSDATE - (3 / 24 + 15 / 1440)
+                            AND acquid = 5
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '5001')) s,
+                    --3d hataları
+                    (SELECT COUNT (*) "3dhata_adet"
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus = 'NO'
+                            AND mdstatus IN (5,
+                                             6,
+                                             7,
+                                             8,
+                                             9,
+                                             0)
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 5
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '5001')) e,
+                    -- normal tx
+                    (SELECT 'HALKBANK GIB' banka,
+                            COUNT (*) normal_adet,
+                            ROUND (AVG (elapsed_time)) AS total_time_ort,
+                            ROUND (AVG (host_time)) AS host_time,
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS nestpay_time,
+                            MAX (elapsed_time) AS max_time,
+                            MAX (host_time) AS max_host_time,
+                            MAX (elapsed_time - host_time) AS max_nestpay_time,
+                            MIN (elapsed_time) AS min_time,
+                            MIN (host_time) AS min_host_time,
+                            MIN (elapsed_time - host_time) AS min_nestpay_time,
+                            STDDEV (elapsed_time) stddevelapsedtime
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440) --AND host_time IS NOT NULL
+                                      AND transtatus = 'OK' --and nvl(mdstatus,'1') <> '1'
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 5
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '5001')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) b,
+                    -- 3d işlemler
+                    (SELECT COUNT (*) "3d_adet",
+                            ROUND (AVG (elapsed_time)) AS "3d_total_time_ort",
+                            ROUND (AVG (host_time)) AS "3d_host_time",
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS "3d_nestpay_time",
+                            MAX (elapsed_time) AS "3d_max_time",
+                            MAX (host_time) AS "3d_max_host_time",
+                            MAX (elapsed_time - host_time)
+                               AS "3d_max_nestpay_time",
+                            MIN (elapsed_time) AS "3d_min_time",
+                            MIN (host_time) AS "3d_min_host_time",
+                            MIN (elapsed_time - host_time)
+                               AS "3d_min_nestpay_time",
+                            STDDEV (elapsed_time) "3dstddev"
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      --AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      AND mdstatus IN ('1',
+                                                       '2',
+                                                       '3',
+                                                       '4')
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 5
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '5001')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) d,
+                    (SELECT COUNT (*) reversaladet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427) t,
+                            dmrl.fimautovoid v
+                      WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND t.tranuid = v.tranuid
+                            AND t.errorcode IN ('BM-9101',
+                                                'BM-9102',
+                                                'BM-9103',
+                                                'BM-1002',
+                                                'CORE-1003',
+                                                'BM-1006',
+                                                'BM-1007',
+                                                'CORE-1005')
+                            AND t.acquid = 5
+                            AND t.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '5001')) f
+             -- ISBANK GIB
+             UNION
+             SELECT a.banka,
+                    '6' sira,
+                    timeout_adet,
+                    core_adet,
+                    e.*,
+                    s.*,
+                    b.normal_adet,
+                    b.total_time_ort,
+                    b.host_time,
+                    b.nestpay_time,
+                    b.max_time,
+                    b.max_host_time,
+                    b.max_nestpay_time,
+                    b.min_time,
+                    b.min_host_time,
+                    b.min_nestpay_time,
+                    b.stddevelapsedtime,
+                    d.*,
+                    f.reversaladet
+               FROM                                        --baglantı hataları
+                    (SELECT 'ISBANK GIB' banka, COUNT (*) timeout_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     (    Transtatus = 'NO'
+                                 AND errorcode IN ('BM-9101',
+                                                   'BM-9102',
+                                                   'BM-9103',
+                                                   'BM-1002',
+                                                   'CORE-1003',
+                                                   'BM-1006',
+                                                   'BM-1007',
+                                                   'CORE-1005'))
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 7
+                            AND criteria5 IN (1)
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '7003')) a,
+                    --core hataları
+                    (SELECT COUNT (*) core_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus IN ('NO', 'RE')
+                            AND errorcode IN ('CORE-1000',
+                                              'CORE-1001',
+                                              'CORE-1002',
+                                              'CORE-1003',
+                                              'CORE-1004',
+                                              'CORE-1005',
+                                              'ISO8583-91')
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 7
+                            AND criteria5 IN (1)
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '7003')) c,
+                    -- kilitli sipariş
+                    (SELECT COUNT (*) "order_lock"
+                       FROM dmrl.fimorderlock o,
+                            dmrl.fimtransaction PARTITION (SYS_P13427) t
+                      WHERE     t.dimuid = o.dimuid
+                            AND t.orderid = o.orderid
+                            AND o.lock_ts > SYSDATE - (3 / 24 + 15 / 1440)
+                            AND o.acquid = 7
+                            AND t.criteria5 IN (1)
+                            AND o.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '7003')) s,
+                    --3d hataları
+                    (SELECT COUNT (*) "3dhata_adet"
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus = 'NO'
+                            AND mdstatus IN (5,
+                                             6,
+                                             7,
+                                             8,
+                                             9,
+                                             0)
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 7
+                            AND criteria5 IN (1)
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '7003')) e,
+                    -- normal tx
+                    (SELECT 'ISBANK GIB' banka,
+                            COUNT (*) normal_adet,
+                            ROUND (AVG (elapsed_time)) AS total_time_ort,
+                            ROUND (AVG (host_time)) AS host_time,
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS nestpay_time,
+                            MAX (elapsed_time) AS max_time,
+                            MAX (host_time) AS max_host_time,
+                            MAX (elapsed_time - host_time) AS max_nestpay_time,
+                            MIN (elapsed_time) AS min_time,
+                            MIN (host_time) AS min_host_time,
+                            MIN (elapsed_time - host_time) AS min_nestpay_time,
+                            STDDEV (elapsed_time) stddevelapsedtime
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      --and nvl(mdstatus,'1') <> '1'
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 7
+                                      AND criteria5 IN (1)
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '7003')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) b,
+                    -- 3d işlemler
+                    (SELECT COUNT (*) "3d_adet",
+                            ROUND (AVG (elapsed_time)) AS "3d_total_time_ort",
+                            ROUND (AVG (host_time)) AS "3d_host_time",
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS "3d_nestpay_time",
+                            MAX (elapsed_time) AS "3d_max_time",
+                            MAX (host_time) AS "3d_max_host_time",
+                            MAX (elapsed_time - host_time)
+                               AS "3d_max_nestpay_time",
+                            MIN (elapsed_time) AS "3d_min_time",
+                            MIN (host_time) AS "3d_min_host_time",
+                            MIN (elapsed_time - host_time)
+                               AS "3d_min_nestpay_time",
+                            STDDEV (elapsed_time) "3dstddev"
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      AND mdstatus IN ('1',
+                                                       '2',
+                                                       '3',
+                                                       '4')
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 7
+                                      AND criteria5 IN (1)
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '7003')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) d,
+                    (SELECT COUNT (*) reversaladet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427) t,
+                            dmrl.fimautovoid v
+                      WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND t.tranuid = v.tranuid
+                            AND t.errorcode IN ('BM-9101',
+                                                'BM-9102',
+                                                'BM-9103',
+                                                'BM-1002',
+                                                'CORE-1003',
+                                                'BM-1006',
+                                                'BM-1007',
+                                                'CORE-1005')
+                            AND t.acquid = 7
+                            AND criteria5 IN (1)
+                            AND t.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '7003')) f
+             -- ISBANK GIB INTERNET
+             UNION
+             SELECT a.banka,
+                    '7' sira,
+                    timeout_adet,
+                    core_adet,
+                    e.*,
+                    s.*,
+                    b.normal_adet,
+                    b.total_time_ort,
+                    b.host_time,
+                    b.nestpay_time,
+                    b.max_time,
+                    b.max_host_time,
+                    b.max_nestpay_time,
+                    b.min_time,
+                    b.min_host_time,
+                    b.min_nestpay_time,
+                    b.stddevelapsedtime,
+                    d.*,
+                    f.reversaladet
+               FROM                                        --baglantı hataları
+                    (SELECT 'ISBANK WEB GIB' banka, COUNT (*) timeout_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     (    Transtatus = 'NO'
+                                 AND errorcode IN ('BM-9101',
+                                                   'BM-9102',
+                                                   'BM-9103',
+                                                   'BM-1002',
+                                                   'CORE-1003',
+                                                   'BM-1006',
+                                                   'BM-1007',
+                                                   'CORE-1005'))
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 7
+                            AND criteria5 IN (2,
+                                              3,
+                                              4,
+                                              5)
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '7003')) a,
+                    --core hataları
+                    (SELECT COUNT (*) core_adet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus IN ('NO', 'RE')
+                            AND errorcode IN ('CORE-1000',
+                                              'CORE-1001',
+                                              'CORE-1002',
+                                              'CORE-1003',
+                                              'CORE-1004',
+                                              'CORE-1005',
+                                              'ISO8583-91')
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 7
+                            AND criteria5 IN (2,
+                                              3,
+                                              4,
+                                              5)
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '7003')) c,
+                    -- kilitli sipariş
+                    (SELECT COUNT (*) "order_lock"
+                       FROM dmrl.fimorderlock o,
+                            dmrl.fimtransaction PARTITION (SYS_P13427) t
+                      WHERE     t.dimuid = o.dimuid
+                            AND t.orderid = o.orderid
+                            AND o.lock_ts > SYSDATE - (3 / 24 + 15 / 1440)
+                            AND o.acquid = 7
+                            AND t.criteria5 IN (2,
+                                                3,
+                                                4,
+                                                5)
+                            AND o.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '7003')) s,
+                    --3d hataları
+                    (SELECT COUNT (*) "3dhata_adet"
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                      WHERE     Transtatus = 'NO'
+                            AND mdstatus IN (5,
+                                             6,
+                                             7,
+                                             8,
+                                             9,
+                                             0)
+                            AND tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND acquid = 7
+                            AND criteria5 IN (2,
+                                              3,
+                                              4,
+                                              5)
+                            AND dimuid IN (SELECT d.dimuid
+                                             FROM dmrl.fimgroupdim g,
+                                                  dmrl.fimdim d
+                                            WHERE     d.authority_name IS NULL
+                                                  AND d.dimuid = g.dimuid
+                                                  AND d.status = 'OK'
+                                                  AND groupuid = '7003')) e,
+                    -- normal tx
+                    (SELECT 'ISBANK WEB GIB' banka,
+                            COUNT (*) normal_adet,
+                            ROUND (AVG (elapsed_time)) AS total_time_ort,
+                            ROUND (AVG (host_time)) AS host_time,
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS nestpay_time,
+                            MAX (elapsed_time) AS max_time,
+                            MAX (host_time) AS max_host_time,
+                            MAX (elapsed_time - host_time) AS max_nestpay_time,
+                            MIN (elapsed_time) AS min_time,
+                            MIN (host_time) AS min_host_time,
+                            MIN (elapsed_time - host_time) AS min_nestpay_time,
+                            STDDEV (elapsed_time) stddevelapsedtime
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      --and nvl(mdstatus,'1') <> '1'
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 7
+                                      AND criteria5 IN (2,
+                                                        3,
+                                                        4,
+                                                        5)
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '7003')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) b,
+                    -- 3d işlemler
+                    (SELECT COUNT (*) "3d_adet",
+                            ROUND (AVG (elapsed_time)) AS "3d_total_time_ort",
+                            ROUND (AVG (host_time)) AS "3d_host_time",
+                            ROUND (AVG (elapsed_time - host_time))
+                               AS "3d_nestpay_time",
+                            MAX (elapsed_time) AS "3d_max_time",
+                            MAX (host_time) AS "3d_max_host_time",
+                            MAX (elapsed_time - host_time)
+                               AS "3d_max_nestpay_time",
+                            MIN (elapsed_time) AS "3d_min_time",
+                            MIN (host_time) AS "3d_min_host_time",
+                            MIN (elapsed_time - host_time)
+                               AS "3d_min_nestpay_time",
+                            STDDEV (elapsed_time) "3dstddev"
+                       FROM (  SELECT elapsed_time,
+                                      host_time,
+                                      elapsed_time - host_time AS nestpay_time
+                                 FROM dmrl.fimtransaction PARTITION (SYS_P13427)
+                                WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                                      AND host_time IS NOT NULL
+                                      AND transtatus = 'OK'
+                                      AND criteria5 IN (2,
+                                                        3,
+                                                        4,
+                                                        5)
+                                      -- AND mdstatus IN ('1', '2', '3', '4')
+                                      AND acqrespcode IS NOT NULL
+                                      AND acquid = 7
+                                      AND dimuid IN (SELECT d.dimuid
+                                                       FROM dmrl.fimgroupdim g,
+                                                            dmrl.fimdim d
+                                                      WHERE     d.authority_name
+                                                                   IS NULL
+                                                            AND d.dimuid =
+                                                                   g.dimuid
+                                                            AND d.status = 'OK'
+                                                            AND groupuid = '7003')
+                             ORDER BY elapsed_time DESC)   --WHERE ROWNUM < 16
+                                                        ) d,
+                    (SELECT COUNT (*) reversaladet
+                       FROM dmrl.fimtransaction PARTITION (SYS_P13427) t,
+                            dmrl.fimautovoid v
+                      WHERE     tran_ts > SYSDATE - (3 / 24 + 2 / 1440)
+                            AND t.tranuid = v.tranuid
+                            AND t.errorcode IN ('BM-9101',
+                                                'BM-9102',
+                                                'BM-9103',
+                                                'BM-1002',
+                                                'CORE-1003',
+                                                'BM-1006',
+                                                'BM-1007',
+                                                'CORE-1005')
+                            AND t.acquid = 7
+                            AND criteria5 IN (2,
+                                              3,
+                                              4,
+                                              5)
+                            AND t.dimuid IN (SELECT d.dimuid
+                                               FROM dmrl.fimgroupdim g,
+                                                    dmrl.fimdim d
+                                              WHERE     d.authority_name
+                                                           IS NULL
+                                                    AND d.dimuid = g.dimuid
+                                                    AND d.status = 'OK'
+                                                    AND groupuid = '7003')) f)
+   ORDER BY sira;

@@ -1,0 +1,2050 @@
+@extends('panel.layouts.base',['is_main'=>true])
+@section('sub_title','View entries')
+@section('content')
+    @push('panel_css')
+    @endpush
+    <Style>
+    .text-xst {
+    font-size: 11px !important;
+}
+    .table.align-items-center td, .table.align-items-center th {
+        max-width: 15%;
+        white-space: inherit;
+    }
+    .form-check {
+        display: inline-block;
+    }
+    .td-5 th {
+        width: 15% !important;
+    }
+    td.user.psw div span {
+        float: right;
+        width: Calc(100% - 40%);
+        text-align: center;
+        padding: 0;
+        font-weight: bold !important;
+    }
+    td.user.psw {
+        padding: 0 !important;
+    }
+    td.user.psw div span:first-child {
+        border-right: 1px solid #000;
+        font-size: 12px;
+        width: 40%;
+        float: left;
+        margin: 0;
+    }
+    td.user.psw div:last-child {
+        
+        border-bottom: 0;
+    }
+    td.user.psw div {
+        float: right;
+        width: 100%;
+        margin: 0;
+        border-bottom: 1px solid #000;
+    }
+
+    </Style>
+    
+                <?php
+                    $_1_1=0;
+                    $_1_2=0;
+                    $_1_3=0;
+                    $_1_4=0;
+                    $_2_1=0;
+                    $_2_2=0;
+                    $_2_3=0;
+                    $_2_4=0;
+                    $_3_1=0;
+                    $_3_2=0;
+                    $_3_3=0;
+                    $_3_4=0;
+                    $_4_1=0;
+                    function sumAmountByCurrencyMove($collection,$year,$state, $currency)
+                    {
+                        if($year == "revenue_partner"){
+                            return $collection->where('price_type', $currency)->sum('revenue_partner');
+                        }
+                        if($year == null){
+                            return $collection->where('price_type', $currency)->where("paybyus","1")->where("sender_paid",$state)->sum('price');
+                        }
+                        
+                        return $collection->where('price_type', $currency)->where("new_date",$year)->where("sender_paid",$state)->sum('price');
+                    }
+                    function sumAmountByCurrencyInc($collection,$year, $currency)
+                    {
+                        if($year == null){
+                            return $collection->where('price_type', $currency)->whereNull("movement_id")->sum('price');
+                        }
+                        return  $collection->where('price_type', $currency)->where("new_date",$year)->whereNull("movement_id")->sum('price');
+                    }
+                ?>
+                
+    <?php
+    
+        function sumAmountByCurrency($collection,$type, $currency)
+        {
+            $rev = "revenue";
+            if($type == "5"){
+                $rev = "revenue_partner";
+            }
+            return $collection->where('price_type', $currency)->where("status",1)->sum($rev);
+        }
+        function sumAmountByCurrencyAllsNets($collection,$type, $currency)
+        {
+            
+            $net = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
+            if($currency == "TL"){
+                $net1 = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
+                $net3 = $collection->where('price_type',"!=", $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
+                $net = $net1+$net3;
+            }
+            
+            $net2 = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("revenue");
+            if($currency == "TL"){
+                $net4 = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("revenue");
+                $net5 = $collection->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
+                $net2 = $net4+$net5;
+            }
+            if($type == "net2"){
+                return $net2;
+            }
+            if($type == "net"){
+                return $net;
+            }
+            
+            if($type == null){
+                $net = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
+                if($currency == "TL"){
+                    $net1 = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
+                    $net3 = $collection->where('price_type',"!=", $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
+                    $net = $net1+$net3;
+                }
+                
+                $net2 = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("revenue");
+                if($currency == "TL"){
+                    $net4 = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("revenue");
+                    $net5 = $collection->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
+                    $net2 = $net4+$net5;
+                }
+                
+                return $net2 - $net;
+            }
+            
+            
+        }
+        function sumAmountByCurrencyAlls($collection,$type, $currency)
+        {
+            
+            $net = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("status" , "1")->where("net_tl",0)->sum("net");
+            if($currency == "TL"){
+                $net1 = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("status" , "1")->where("net_tl",0)->sum("net");
+                $net3 = $collection->where('price_type',"!=", $currency)->where("paybyus" , "1")->where("status" , "1")->sum("net_tl");
+                $net = $net1+$net3;
+            }
+                
+            $net2 = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("status" , "1")->where("net_tl",0)->sum("net");
+            
+            if($currency == "TL"){
+                $net4 = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("status" , "1")->where("net_tl",0)->sum("net");
+                $net5 = $collection->where("paybyus" , "0")->where("status" , "1")->sum("net_tl");
+                $net2 = $net4+$net5;
+            }
+            
+            $unpaid = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("status" , "0")->where("net_tl",0)->sum("net");
+            if($currency == "TL"){
+                $net6 = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("status" , "0")->where("net_tl",0)->sum("net");
+                $net7 = $collection->where("paybyus" , "1")->where("status" , "0")->sum("net_tl");
+                $unpaid = $net7+$net6;
+            }
+            
+            $profit = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("status" , "1")->sum("revenue");
+            $profit2 = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("status" , "1")->sum("revenue");
+            if($type == "profit"){
+                return $profit;
+            }
+            if($type == "paid"){
+                return $profit2;
+            }
+            if($type == "unpaid"){
+                return $unpaid;
+            }
+            if($type == "net"){
+                return $net;
+            }
+            if($type == "net2"){
+                return $net2;
+            }
+            if($type == null){
+                $net = $collection->where('price_type', $currency)->where("net_tl",0)->sum("net");
+                if($currency == "TL"){
+                    $net1 = $collection->where('price_type', $currency)->where("net_tl",0)->sum("net");
+                    $net3 = $collection->where('price_type',"!=", $currency)->sum("net_tl");
+                    $net = $net1+$net3;
+                }
+                return $net;
+            }
+            return $net+$net2;
+        }
+        function sumAmountByCurrencyAllAdmin($collection,$type, $currency)
+        {
+            $s =  $collection->where('price_type', $currency)->WhereNotNull("admin_partner")->sum("admin_partner");
+            $s2 = $collection->where('admin_commission_type', $currency)->Where("admin_commission","!=","0")->sum("admin_commission");
+            return $s + $s2;
+        }
+        function sumAmountByCurrencyAll($collection,$type, $currency)
+        {
+            return $collection->where('price_type', $currency)->where("status",1)->sum("revenue") + $collection->where('commission_type', $currency)->where("status",1)->sum("commission");
+        }
+        function sumProfitPartnerAll($collection,$type, $currency)
+        {
+            return $collection->where("status",1)->sum("revenue_partner");
+        }
+        function sumAmountByCurrencyC($collection,$type, $currency)
+        {
+            return $collection->where('commission_type', $currency)->sum('commission');
+        }
+        function sumAmountByCurrencyCOfType($collection,$type, $currency)
+        {
+            $sum = $collection->where("type" , $type)->where("status",1)->where('commission_type', $currency)->sum('commission');
+            return $sum == 0 ? null : $sum;
+        }
+        function sumAmountByCurrencyPOfType($collection,$type, $currency)
+        { 
+            $sum = $collection->where("type" , $type)->where("status",1)->where('price_type', $currency)->sum('revenue');
+            return $sum == 0 ? null : $sum;
+        }
+        
+        function CountofTypeAdminAC($collection,$type, $currency)
+        { 
+            if($type == null){
+                $sum = $collection->Where("admin_commission","!=","0")->count();
+            }else{
+                $sum = $collection->Where("admin_commission","!=","0")->where("type" , $type)->where("status",1)->count();
+            }
+            return $sum == 0 ? null : $sum;
+        }
+        function sumAmountByCurrencyAllAdminAC($collection,$type, $currency)
+        {
+            return $collection->where('admin_commission_type', $currency)->Where("admin_commission","!=","0")->sum("admin_commission");
+        }
+        function CountofTypeAdmin($collection,$type, $currency)
+        { 
+            if($type == "d"){
+            return $collection->WhereNotNull("admin_partner")->where("status",1)->count();
+            }
+            if($type == "paid"){
+            return $collection->WhereNotNull("admin_partner")->where("status",0)->count();
+            }
+            if($type == "net2"){
+                return $collection->WhereNotNull("admin_partner")->where("paybyus" , "0")->where("status",1)->count();
+            }
+            if($type == "net"){
+                return $collection->WhereNotNull("admin_partner")->where("paybyus" , "1")->where("status",1)->count();
+            }
+            if($type == "unpaid"){
+                return $collection->WhereNotNull("admin_partner")->where("paybyus" , "1")->where("status",0)->count();
+            }
+            if($type == null){
+            $sum = $collection->WhereNotNull("admin_partner")->count();
+            }else{
+            $sum = $collection->WhereNotNull("admin_partner")->where("type" , $type)->where("status",1)->count();
+            }
+            return $sum == 0 ? null : $sum;
+        }
+        function CountofTypeNets($collection,$type, $currency)
+        { 
+            if($type == "d"){
+            return $collection->where("leader_paid",0)->where("status","0")->count();
+            }
+            if($type == "paid"){
+            return $collection->where("leader_paid",0)->where("status","0")->count();
+            }
+            if($type == "net2"){
+                return $collection->where("paybyus" , "0")->where("status","0")->where("leader_paid",0)->count();
+            }
+            if($type == "net"){
+                return $collection->where("paybyus" , "1")->where("status","0")->where("leader_paid",0)->count();
+            }
+            if($type == "unpaid"){
+                return $collection->where("paybyus" , "1")->where("status","0")->where("leader_paid",0)->count();
+            }
+            if($type == null){
+            $sum = $collection->where("leader_paid",0)->where("status","0")->count();
+            }else{
+            $sum = $collection->where("type" , $type)->where("status","0")->where("leader_paid",0)->count();
+                
+            }
+            return $sum == 0 ? 0 : $sum;
+        }
+        function CountofType($collection,$type, $currency)
+        { 
+            if($type == "d"){
+            return $collection->where("status",1)->count();
+            }
+            if($type == "paid"){
+            return $collection->where("status",0)->count();
+            }
+            if($type == "net2"){
+                return $collection->where("paybyus" , "0")->where("status",1)->count();
+            }
+            if($type == "net"){
+                return $collection->where("paybyus" , "1")->where("status",1)->count();
+            }
+            if($type == "unpaid"){
+                return $collection->where("paybyus" , "1")->where("status",0)->count();
+            }
+            if($type == null){
+            $sum = $collection->count();
+            }else{
+            $sum = $collection->where("type" , $type)->where("status",1)->count();
+                
+            }
+            return $sum == 0 ? null : $sum;
+        }
+        
+    ?>
+    <style>
+    .text-xsm{
+    font-size: 0.75rem !important;
+    }
+        .flag img {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%,-50%);
+    width: 100%;
+    overflow: hidden;
+    border-radius: 50%;
+    height: 100%;
+}
+.flag {
+    position: relative;
+    display: inline-block;
+    width: 22px;
+    height: 22px;
+    overflow: hidden;
+    margin-bottom: -2px;
+    margin-top: 4px;
+}
+ul.munths a.selected {
+    background-color: #252f40;
+    border-color: #252f40;
+    color:#fff;
+}
+ul.munths a {
+    float: right;
+    width: 28px;
+    height: 28px;
+    border: 1px solid #ddd;
+    font-size: 12px;
+    text-align: center;
+    line-height: 28px;
+    border-radius: 5px;
+}
+ul.munths li {
+    float: left;
+    margin-right: 5px;
+}
+ul.munths {
+    display: inline-block;
+    margin-right: 5px;
+    list-style: none;
+    padding: 0;
+    margin-bottom: -5px;
+}
+.checkbox.sus label{
+    padding-left: 0;
+    font-size: 16px;
+    padding-right: 30px;
+}
+.checkbox.sus label:before{
+    width:25px;
+    height:25px;
+    right: 0;
+    left: auto !important;
+}
+.checkbox.sus label:after{
+    width:25px !important;
+    height:25px !important;
+    right: 0;
+    left: auto !important;
+    font-size: 14px !important;
+    line-height: 24px !important;
+}
+    </style>
+    <div class="row">
+        <div class="col-12" style="position: relative;">
+            <div class="card mb-4 mx-4 pb-2" style="position: sticky;right: 0;left: 17%;z-index: 3;top: 4px;">
+                <div class="card-header pb-0">
+                    <div class="d-flex flex-row justify-content-between">
+                        <div>
+                            <h5 class="mb-1 show_accro">
+                                Filter entries
+                            </h5>
+                        </div>
+                        <div>
+                            <?php 
+                            $url = Route('panel.movement.view')."?";
+                            if(isset($request["d_user"]) && $request["d_user"]){
+                                $url .="&d_user=".$request["d_user"];
+                            }
+                            
+                            if(isset($request["type"]) && $request["type"]){
+                                $url .="&type=".$request["type"];
+                            }
+                            
+                            if(isset($request["m_type"]) && $request["m_type"]){
+                                $url .="&m_type=".$request["m_type"];
+                            }
+                            
+                            if(isset($request["country_id"]) && $request["country_id"]){
+                                $url .="&country_id=".$request["country_id"];
+                            }
+                            $nows = \Carbon\Carbon::now();
+                            $now = $nows->month;
+                            $year = $nows->year;
+                            if(isset($request["from_date"]) && $request["from_date"] != null){
+                                $nows = \Carbon\Carbon::parse($request["from_date"]);
+                                $now = $nows->month;
+                                $year = $nows->year;
+                            }
+                            ?>
+                            <ul class="munths">
+                                <li><a href="{{$url.'&from_date='.$year.'-01-01&to_date='.$year.'-01-31'}}" class='{{ $now == 1 ? "selected" : "" }}'>01</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-02-01&to_date='.$year.'-02-31'}}" class='{{ $now == 2 ? "selected" : "" }}'>02</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-03-01&to_date='.$year.'-03-31'}}" class='{{ $now == 3 ? "selected" : "" }}'>03</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-04-01&to_date='.$year.'-04-31'}}" class='{{ $now == 4 ? "selected" : "" }}'>04</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-05-01&to_date='.$year.'-05-31'}}" class='{{ $now == 5 ? "selected" : "" }}'>05</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-06-01&to_date='.$year.'-06-31'}}" class='{{ $now == 6 ? "selected" : "" }}'>06</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-07-01&to_date='.$year.'-07-31'}}" class='{{ $now == 7 ? "selected" : "" }}'>07</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-08-01&to_date='.$year.'-08-31'}}" class='{{ $now == 8 ? "selected" : "" }}'>08</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-09-01&to_date='.$year.'-09-31'}}" class='{{ $now == 9 ? "selected" : "" }}'>09</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-10-01&to_date='.$year.'-10-31'}}" class='{{ $now == 10 ? "selected" : "" }}'>10</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-11-01&to_date='.$year.'-11-31'}}" class='{{ $now == 11 ? "selected" : "" }}'>11</a></li>
+                                <li><a href="{{$url.'&from_date='.$year.'-12-01&to_date='.$year.'-12-31'}}" class='{{ $now == 12 ? "selected" : "" }}'>12</a></li>
+                            </ul>
+                            <a class="btn bg-gradient-dark btn-sm mb-2 export_pdf" type="button">Export PDF</a>
+                            <a href="{{ route('panel.movement.add_new') }}" class="btn bg-gradient-dark btn-sm mb-2" type="button">+&nbsp; New entry</a>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body px-4 pt-0 pb-0 mb-0 hide_accro">
+                    <form action="{{ Route('panel.movement.view') }}" method="Get" role="form text-left">
+                        @csrf
+                        <div class="row">
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="d_user" class="form-control-label">{{ __('User') }}</label>
+                                    <div class="@error('d_user') border border-danger rounded-3 @enderror">
+                                        <select name="d_user" class="select form-control" id="d_user">
+                                        <option value="">Choose</option>
+                                            @foreach($users as $key => $row)
+                                                <option value="{{$row->id}}" {{ isset($request["d_user"]) && $request["d_user"] == $row->id ? 'selected' : '' }}>{{$row->full_name}}</option>
+                                            @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="from_date" class="form-control-label">{{ __('From Date') }}</label>
+                                    <div class="@error('from_date') border border-danger rounded-3 @enderror">
+                                        <input class="form-control datepicker" autocomplete="off" name="from_date" value='{{ @$request["from_date"] }}'>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="to_date" class="form-control-label">{{ __('To Date') }}</label>
+                                    <div class="@error('to_date') border border-danger rounded-3 @enderror">
+                                        <input class="form-control datepicker" autocomplete="off" name="to_date" value='{{ @$request["to_date"] }}'>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="type" class="form-control-label">{{ __('Type') }}</label>
+                                    <div class="@error('type') border border-danger rounded-3 @enderror">
+                                        <select name="type" class="select form-control" id="type">
+                                        <option value="">Choose</option>
+                                        <option value="1" {{ isset($request["type"]) && $request["type"] == "1" ? 'selected' : '' }}>Admin</option>
+                                        <option value="2" {{ isset($request["type"]) && $request["type"] == "2" ? 'selected' : '' }}>Driver</option>
+                                        <option value="3" {{ isset($request["type"]) && $request["type"] == "3" ? 'selected' : '' }}>Agent</option>
+                                        <option value="4" {{ isset($request["type"]) && $request["type"] == "4" ? 'selected' : '' }}>Vendor</option>
+                                        <option value="5" {{ isset($request["type"]) && $request["type"] == "5" ? 'selected' : '' }}>Partner</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="m_type" class="form-control-label">{{ __('Movement Type') }}</label>
+                                    <div class="@error('m_type') border border-danger rounded-3 @enderror">
+                                        <select name="m_type" class="select form-control" id="m_type">
+                                        <option value="">Choose</option>
+                                        <option value="Transfers" {{ isset($request["m_type"]) && $request["m_type"] == "Transfers" ? 'selected' : '' }}>Transfers</option>
+                                        <option value="Driver Tours" {{isset($request["m_type"]) && $request["m_type"] == "Driver Tours" ? 'selected' : '' }}>Driver Tours</option>
+                                        <option value="Group Tours" {{isset($request["m_type"]) && $request["m_type"] == "Group Tours" ? 'selected' : '' }}>Group Tours</option>
+                                        <!--<option value="Car Rental" {{ isset($request["m_type"]) && $request["m_type"] == "Car Rental" ? 'selected' : '' }}>Car Rental</option>-->
+                                        <option value="Hotels/Apart-hotels" {{ isset($request["m_type"]) && $request["m_type"] == "Hotels/Apart-hotels" ? 'selected' : '' }}>Hotels</option>
+                                        <option value="Other Services" {{ isset($request["m_type"]) && $request["m_type"] == "Other Services" ? 'selected' : '' }}>Other Services</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-2">
+                                <div class="form-group">
+                                    <label for="country_id" class="form-control-label">{{ __('country') }}</label>
+                                    <div class="@error('country_id') border border-danger rounded-3 @enderror">
+                                        <select name="country_id" class="select form-control" id="country_id">
+                                        <option value="">Choose</option>
+                                        @foreach($countries as $key => $row)
+                                            <option value="{{$row->countries_id}}" {{ isset($request["country_id"]) && $request["country_id"] == $row->countries_id ? "selected" : ""}}>{{$row->name}}</option>
+                                        @endforeach
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-end">
+                            <button type="submit" class="btn bg-gradient-dark btn-md mt-2 mb-2">{{ 'Go Filter' }}</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+            <div class="card mb-4 mx-4 mt-2">
+                <div class="card-header pb-0">
+                    <div class="d-flex flex-row justify-content-between mb-2">
+                        <div>
+                            
+                            <?php
+                                $t1 = 0;
+                                $t2 = 0;
+                                $t3 = 0;
+                                if(isset($ispartner) && $ispartner->type != 1){
+                                    foreach($data as $key=>$ye){
+                                        foreach($ye as $key_yes => $yes){
+                                            $t1 += sumAmountByCurrencyAllsNets($yes ,null, '$');
+                                            $t2 += sumAmountByCurrencyAllsNets($yes ,null, 'TL');
+                                            $t3 += sumAmountByCurrencyAllsNets($yes ,null, '€');
+                                        }
+                                    }
+                                }
+                            ?>
+                            
+                            <h5 class="mb-1">All entries ({{$NowCount}}) 
+                                @if(isset($ispartner))
+                                    
+                                     , {{ $ispartner->full_name }} {{ ($t1 != 0 || $t2 != 0 || $t3 != 0) == true ? ": " : "" }}
+                                     
+                                    @if($ispartner->type == 3)
+                                     {{ $ispartner->blance < 0 ? "-" : "" }} ${{ $ispartner->blance < 0 ? abs($ispartner->blance) : $ispartner->blance }}
+                                    @endif
+                                    
+                                    @if($ispartner->type == 2)
+                                        {{ $t1 == null || $t1 == 0 ? "" : " $ ".$t1}}
+                                        {{ $t2 == null || $t2 == 0 ? "" : "& TL ".$t2}}
+                                        {{ $t3 == null || $t3 == 0 ? "" : "& € ".$t3}} 
+                                        @if($t1 != 0 || $t2 != 0 || $t3 != 0)
+                                        <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
+                                            <input name="paids" type="checkbox" placeholder="paids" id="paids" value="1">
+                                            <label for="paids"> , {{ __('Paid Done') }}</label>
+                                        </div>
+                                        <form id="form_paids" action="{{ Route('panel.movement.paid') }}" method="post" role="form text-left" style="display:none;float: right;margin-top: -2px;margin-left: 5px;">
+                                            @csrf
+                                            <input type="hidden" name="from_date" value="{{ @$request['from_date'] }}" />
+                                            <input type="hidden" name="to_date" value="{{ @$request['to_date'] }}" />
+                                            <input type="hidden" name="d_user" value="{{ @$request['d_user'] }}" />
+                                            <input type="hidden" name="type" value="{{ @$request['type'] }}" />
+                                            <input type="hidden" name="m_type" value="{{ @$request['m_type'] }}" />
+                                            <input type="hidden" name="country_id" value="{{ @$request['country_id'] }}" />
+                                        </form>
+                                        @endif
+                                    @endif
+                                    @if($ispartner->id == 25)
+                                        <?php $t = 0; ?>
+                                        @foreach($data as $key=>$ye)
+                                            @foreach($ye as $key_yes => $yes)
+                                            <?php $t += sumAmountByCurrencyAllsNets($yes ,null, 'TL'); ?>
+                                            @endforeach
+                                        @endforeach
+                                        <?php if($t != 0 ){ echo "TL " . $t; } ?>
+                                    @endif
+                                @endif
+                            </h5>
+                        </div>
+                    </div>
+                </div>
+                <div id="exp_pdf" class="card-body px-3 pt-0 pb-2 cls">
+                    <!-- <div class="table-responsive p-0"> -->
+                    @foreach($data as $key=>$ye)
+                        @foreach($ye as $key_yes => $yes)
+                            <?php
+                                $ispartnerprofit = sumProfitPartnerAll($yes,null,null);
+                                $is=0;
+                                $iss=0;
+                                $isss=0;
+                                $issss=0;
+                                $cs=0;
+                                $css=0;
+                                $csss=0;
+                                $cssss=0;
+                                
+                                $date="";
+                                foreach($ye as $k=>$it){
+                                    $date = $k;
+                                }
+                            ?>
+                            <table class="table align-items-center mb-0">
+                                <thead>
+                                    <tr class="bg">
+                                        <th colspan="20">
+                                            <!--@if((isset($request["d_user"]) && $request["d_user"] != null) && @$ispartner->type != 5)-->
+                                            <!--    {{@$ispartner->full_name}} <br>-->
+                                            <!--@endif-->
+                                            @if(isset($ispartner) && $ispartner->type == 5)
+                                                Ahlan Antalya <br>
+                                            @endif
+                                            {{$date}}
+                                        </th>
+                                    </tr>
+                                    <tr>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            ID
+                                        </th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:60px;padding: 0;">
+                                            Date
+                                        </th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="padding: 0;width:15%;">
+                                            Clinet Name
+                                        </th>
+                                        <th class="" style="width:50px;padding: 0;">
+                                            <i class="fa fa-flag"></i>
+                                        </th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:240px;padding: 0;">
+                                            Service Description
+                                        </th>
+                                        <!--<th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">-->
+                                        <!--    Type-->
+                                        <!--</th>-->
+                                        
+                                        @if(isset($ispartner->type) && $ispartner->type == 1)
+                                        @else
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 p-1"  style="width:50px;">
+                                            Admin
+                                        </th>
+                                        @endif
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" style="width:8%;padding: 0 !important;">
+                                            User
+                                        </th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:70px;padding: 0;">
+                                            Price
+                                        </th>
+                                        @if((isset($request["d_user"]) && $request["d_user"] != null))
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:70px;padding: 0;">
+                                            Net
+                                        </th>
+                                        <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:70px;padding: 0;">
+                                            Profit
+                                        </th>
+                                        
+                                        <!--<th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">-->
+                                        <!--    P Profit-->
+                                        <!--</th>-->
+                                        @endif
+                                        <!-- <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            Country
+                                        </th>
+                                        <th class="last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            PayByUs
+                                        </th>
+                                        <th class="last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                            Status
+                                        </th> -->
+                                        <!-- <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 p-1">
+                                            Commission
+                                        </th> -->
+                                        <th class="" style="width:50px;padding: 0;">
+                                            <i class="fa fa-edit"></i>
+                                        </th>
+                                        <th class="last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:60px;padding: 0;">
+                                            Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                @foreach($data_old as $dold)
+                                    <?php
+                                        $colors = "#ffffff";
+                                        if($dold->color == "1"){
+                                            $colors = "#ff0000";
+                                        }
+                                        else if($dold->color == "2"){
+                                            $colors = "#fffc00";
+                                        }
+                                        else if($dold->color == "3"){
+                                            $colors = "#12ff00";
+                                        }
+                                        else if($dold->color == "4"){
+                                            $colors = "#00fff0";
+                                        }
+                                        else if($dold->color == "5"){
+                                            $colors = "#ffc107";
+                                        }
+                                        $color = "";
+                                        if($colors != "#ffffff"){
+                                            $color = "background:".$colors.";color:#fff;";
+                                            if($colors != "#ff0000"){
+                                                $color = "background:".$colors.";color:#333;";
+                                            }
+                                        }
+                                        if($colors == "#ff0000"){
+                                            $color = "background:".$colors.";color:#fff;";
+                                        }
+                                    ?>
+                                    
+                                    <tr id="tr_{{ date('d-M', strtotime($dold->date)) }}">
+                                        <td style="{{$color}}">
+                                            <p class="text-xs font-weight-bold mb-0">PRV</p>
+                                        </td>
+                                        <td class="text-center" style="{{$color}}">
+                                            <p class="text-xst font-weight-bold mb-0">{{ date("d M", strtotime($dold->date)) }}</p>
+                                            @if($dold->to_date != null)
+                                            <p class="text-xst font-weight-bold mb-0">{{ date("d M", strtotime($dold->to_date)) }}</p>
+                                            @endif
+                                        </td>
+                                        <td class="text-center"  style="{{$color}}">
+                                            <p class="text-xst font-weight-bold mb-0">
+                                                {{ $dold->customer  }}
+                                                </p>
+                                        </td>
+                                        <td class="text-center" style="{{$color}}">
+                                                <span class="flag">
+                                                    <img src="{{@$dold->country->avatar}}" />
+                                                </span>
+                                        </td>
+                                        <td class="text-center" style="{{$color}}">
+                                            <p class="text-xst font-weight-bold mb-0">{{ $dold->description }}</p>
+                                        </td>
+                                        <?php 
+                                            $colorv = "background:".@$dold->m_user->background.";color:#fff;";
+                                        ?>
+                                        
+                                        @if(isset($ispartner->type) && $ispartner->type == 1)
+                                        @else
+                                        <td class="user" style="{{$colorv}}">
+                                            <a class="text-xst font-weight-bold mb-0"  target="_blank" href="{{ url('/admin/movement?d_user='.$dold->m_user->id)}}" style="background:{{@$dold->m_user->background}};color:{{@$dold->m_user->color}}">{{ $dold->m_user->user_name }}</a>
+                                        </td>
+                                        @endif
+                                        
+                                        <?php
+                                            $st = "";
+                                            if(sizeof($dold->users) == 1){
+                                                $usw = $dold->users->first();
+                                                $st = 'background:'.@$usw->background.';color:'.@$usw->color.'';
+                                            }else if(isset($request["d_user"])){
+                                                $usw = $dold->users->where("id","!=",$request["d_user"])->first();
+                                                $st = 'background:'.@$usw->background.';color:'.@$usw->color.'';
+                                            }
+                                        ?>
+                                        <td class="user" style="{{ $st }}">
+                                            <?php
+                                                $useme1 = "";
+                                                $useme2 = "";
+                                                if(isset($request["d_user"]) && sizeof($dold->users) == 1){
+                                                    if($request["d_user"] == $dold->users->first()->id){
+                                                        $useme2 = '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$dold->users->first()->id.'" style="background:'.$dold->users->first()->background.';color:'.$dold->users->first()->color.'">DIRECT</a>';
+                                                    }else{
+                                                        $useme2 = '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$dold->users->first()->id.'" style="background:'.$dold->users->first()->background.';color:'.$dold->users->first()->color.'">'.$dold->users->first()->full_name .'</a>';
+                                                    }
+                                                }
+                                            ?>
+                                            @foreach($dold->users as $user)
+                                            <?php
+                                                if(isset($request["d_user"]) && sizeof($dold->users) == 1){
+                                                }
+                                                else{
+                                                     if(isset($request["d_user"])){
+                                                         if($request["d_user"] == $user->id){
+                                                         }else{
+                                                             $useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->id.'" style="background:'.@$user->background.';color:'.@$user->color.'">'.@$user->full_name .'</a>';
+                                                         }
+                                                     }
+                                                     else{
+                                                         $useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->id.'" style="background:'.@$user->background.';color:'.@$user->color.'">'.@$user->full_name .'</a>';
+                                                     }
+                                                }
+                                            ?>
+                                            @endforeach
+                                            <?php echo $useme2; ?>
+                                        </td>
+                                        <?php 
+                                            if($dold->status == "1"){
+                                                $color = "background:#12ff00;color:#333;";
+                                            }else{
+                                                $color = "background:#2196f366;color:#333;";
+                                            }
+                                            if($dold->paybyus == "1"){
+                                                $color = "background:#fffc00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <?php 
+                                            $cs_clore0 = $color; 
+                                            if($dold->sender_paid == "1" && $dold->paybyus == "1"){
+                                                $cs_clore0 = "background:#12ff00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <td class="user psw" style="{{$cs_clore0}}">
+                                            @if($dold->commission != 0)
+                                                <div>
+                                                    <span>P</span>
+                                                    <span class="text-xst font-weight-bold mb-0 _0">{{$dold->price_type}} {{ $dold->price }} 
+                                                        @if($dold->sender_paid == "1" && $dold->paybyus == "1")
+                                                        <i class="fa fa-arrow-right"></i>
+                                                        @elseif($dold->paybyus == "0" && $dold->revenue_partner != null)
+                                                        <i class="fa fa-arrow-left"></i>
+                                                        @elseif($dold->paybyus == "1" && $dold->sender_paid == 0 && isset($dold->sebder_user) && $dold->sebder_user != null)
+                                                        <i class="fa fa-clock-o"></i>
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                                <div>
+                                                    <span>C</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{$dold->commission_type}} {{ $dold->commission }}</span>
+                                                </div>
+                                            @endif
+                                            @if($dold->commission == 0)
+                                                <p class="text-xst font-weight-bold mb-0 _1">{{ $dold->price_type." ".$dold->price }}
+                                                    @if($dold->sender_paid == "1" && $dold->paybyus == "1")
+                                                    <i class="fa fa-arrow-right"></i>
+                                                    @elseif($dold->paybyus == "0" && $dold->revenue_partner != null)
+                                                    <i class="fa fa-arrow-left"></i>
+                                                    @elseif($dold->paybyus == "1" && $dold->sender_paid == 0 && isset($dold->sebder_user) && $dold->sebder_user != null)
+                                                    <i class="fa fa-clock-o"></i>
+                                                    @endif
+                                                </p>
+                                            @endif
+                                        </td>
+                                        @if((isset($request["d_user"]) && $request["d_user"] != null))
+                                        
+                                        <?php 
+                                            $cs_clore = $color; 
+                                            if($dold->leader_paid == "1" && $dold->paybyus == "1"){
+                                                $cs_clore = "background:#12ff00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <td class="user psw" style="{{$cs_clore}}">
+                                            @if($dold->net_tl != 0)
+                                                <div>
+                                                    <span>{{$dold->price_type}}</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $dold->net }}</span>
+                                                </div>
+                                                <div>
+                                                    <span>TL</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $dold->net_tl }}</span>
+                                                </div>
+                                            @endif
+                                            @if($dold->net_tl == 0)
+                                            <p class="text-xst font-weight-bold mb-0">{{ $dold->price_type." ".$dold->net }}</p>
+                                            @endif
+                                        </td>
+                                        
+                                        <?php 
+                                            $cs_clore1 = $color; 
+                                            if($dold->status == "1" && $dold->paybyus == "1"){
+                                                $cs_clore1 = "background:#12ff00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <td class="user psw" style="{{$cs_clore1}}">
+                                            @if($dold->admin_partner != null || $dold->revenue_partner != null)
+                                                <div>
+                                                    <span>CP</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $dold->price_type." ".$dold->revenue }}</span>
+                                                </div>
+                                            @endif
+                                            @if(isset($dold->revenue_partner) && $dold->revenue_partner != null)
+                                                <div>
+                                                    <span>PP</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $dold->price_type." ".$dold->revenue_partner }}</span>
+                                                </div>
+                                            @endif
+                                            @if(isset($dold->admin_partner) && $dold->admin_partner != null)
+                                                <div>
+                                                    <span>AP</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $dold->price_type." ".$dold->admin_partner }}</span>
+                                                </div>
+                                                @endif
+                                            @if($dold->admin_partner == null && $dold->revenue_partner == null)
+                                                <p class="text-xst font-weight-bold mb-0">{{ $dold->price_type." ".$dold->revenue }}</p>
+                                            @endif
+                                        </td>
+                                        @endif
+                                        <td class="text-center">
+                                            @if($dold->commit == 1)
+                                            <i class="fa fa-check" style="color:#12ff00"></i>
+                                            @else
+                                            <i class="fa fa-exclamation" aria-hidden="true" style="color:#ff0000;"></i>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('panel.movement.add_new' , $dold->movement_id ) }}" class="mx-1" target="_blank" data-bs-toggle="tooltip"
+                                                data-bs-original-title="Edit Movement">
+                                                <i class="fas fa-user-edit text-secondary"></i>
+                                            </a>
+                                            <a data-url="{{ route('panel.movement.delete' , $dold->movement_id ) }}" class="mx-1 delete" data-bs-toggle="tooltip"
+                                                data-bs-original-title="Delete Movement">
+                                                <i class="cursor-pointer fas fa-trash text-danger"></i>
+                                            </a>
+                                            <?php 
+                                                $sho = false;
+                                                $date = Carbon\Carbon::parse($dold->date);
+                                                $now = Carbon\Carbon::now();
+                                                //dd($date , $now , $date >= $now);
+                                                //if($date >= $now){
+                                                    $diff = $date->diffInDays($now);
+                                                    if($diff == 0){
+                                                        $sho = true;
+                                                    }
+                                                    if($dold->to_date != null){
+                                                        $to_date = Carbon\Carbon::parse($dold->to_date);
+                                                        $now2 = Carbon\Carbon::now();
+                                                        $diff2 = $to_date->diffInDays($now2);
+                                                        if($diff2 == 0 && $diff >= 0){
+                                                            $sho = true;
+                                                        }
+                                                    }
+                                                //}
+                                            ?>
+                                            @if($sho)
+                                            <div class="form-check form-switch ps-0 check_center">
+                                                <input class="form-check-input ms-auto is-displayed"
+                                                  data-url="{{ route('panel.movement.change_status' , $dold->movement_id ) }}"
+                                                  type="checkbox" id="flexSwitchCheckDefault"
+                                                  {{ $dold->completed == 1 ? 'checked' : ''}}>
+                                            </div>
+                                            @endif
+                                            
+                                        </td>
+                                    </tr>
+                                @endforeach
+                                    
+                                @foreach($yes as $key => $row)
+                                    <?php
+                                        $colors = "#ffffff";
+                                        if($row->color == "1"){
+                                            $colors = "#ff0000";
+                                        }
+                                        else if($row->color == "2"){
+                                            $colors = "#fffc00";
+                                        }
+                                        else if($row->color == "3"){
+                                            $colors = "#12ff00";
+                                        }
+                                        else if($row->color == "4"){
+                                            $colors = "#00fff0";
+                                        }
+                                        else if($row->color == "5"){
+                                            $colors = "#ffc107";
+                                        }
+                                        $color = "";
+                                        if($colors != "#ffffff"){
+                                            $color = "background:".$colors.";color:#fff;";
+                                            if($colors != "#ff0000"){
+                                                $color = "background:".$colors.";color:#333;";
+                                            }
+                                        }
+                                        if($colors == "#ff0000"){
+                                            $color = "background:".$colors.";color:#fff;";
+                                        }
+                                    ?>
+                                    <tr id="tr_{{ date('d-M', strtotime($row->date)) }}">
+                                        <td style="{{$color}}">
+                                            <p class="text-xs font-weight-bold mb-0">{{ $OldCount + $key + 1 }}</p>
+                                        </td>
+                                        <td class="text-center" style="{{$color}}">
+                                            <p class="text-xst font-weight-bold mb-0">{{ date("d M", strtotime($row->date)) }}</p>
+                                            @if($row->to_date != null)
+                                            <p class="text-xst font-weight-bold mb-0">{{ date("d M", strtotime($row->to_date)) }}</p>
+                                            @endif
+                                        </td>
+                                        <td class="text-center"  style="{{$color}}">
+                                            <p class="text-xst font-weight-bold mb-0">
+                                                {{ $row->customer  }}
+                                                </p>
+                                        </td>
+                                        <td class="text-center" style="{{$color}}">
+                                                <span class="flag">
+                                                    <img src="{{@$row->country->avatar}}" />
+                                                </span>
+                                        </td>
+                                        <td class="text-center" style="{{$color}}">
+                                            <p class="text-xst font-weight-bold mb-0">{{ $row->description }}</p>
+                                        </td>
+                                        <!--<td class="text-center" style="{{$color}}">-->
+                                        <!--    <p class="text-xsm font-weight-bold mb-0">{{ $row->type }}</p>-->
+                                        <!--</td>-->
+                                        <?php 
+                                        
+                                            $colorv = "background:".@$row->m_user->background.";color:#fff;";
+                                        ?>
+                                        
+                                        @if(isset($ispartner->type) && $ispartner->type == 1)
+                                        @else
+                                        <td class="user" style="{{$colorv}}">
+                                            <a class="text-xst font-weight-bold mb-0"  target="_blank" href="{{ url('/admin/movement?d_user='.$row->m_user->id)}}" style="background:{{@$row->m_user->background}};color:{{@$row->m_user->color}}">{{ $row->m_user->user_name }}</a>
+                                        </td>
+                                        @endif
+                                        
+                                        <?php
+                                            $st = "";
+                                            if(sizeof($row->users) == 1){
+                                                $usw = $row->users->first();
+                                                $st = 'background:'.@$usw->background.';color:'.@$usw->color.'';
+                                            }else if(isset($request["d_user"])){
+                                                $usw = $row->users->where("id","!=",$request["d_user"])->first();
+                                                $st = 'background:'.@$usw->background.';color:'.@$usw->color.'';
+                                            }
+                                        ?>
+                                        <td class="user" style="{{ $st }}">
+                                            <?php
+                                                $useme1 = "";
+                                                $useme2 = "";
+                                                if(isset($request["d_user"]) && sizeof($row->users) == 1){
+                                                    if($request["d_user"] == $row->users->first()->id){
+                                                        $useme2 = '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$row->users->first()->id.'" style="background:'.$row->users->first()->background.';color:'.$row->users->first()->color.'">DIRECT</a>';
+                                                    }else{
+                                                        $useme2 = '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$row->users->first()->id.'" style="background:'.$row->users->first()->background.';color:'.$row->users->first()->color.'">'.$row->users->first()->full_name .'</a>';
+                                                    }
+                                                }
+                                            ?>
+                                            
+                                            @foreach($row->musers as $user)
+                                            <?php
+                                                if(isset($request["d_user"]) && sizeof($row->users) == 1){
+                                                }
+                                                else{
+                                                     if(isset($request["d_user"])){
+                                                         if($request["d_user"] == $user->user->id){
+                                                         }else{
+                                                             if($user->type == 0){
+                                                                $useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                             }
+                                                             else{
+                                                                $useme1 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                             }
+                                                         }
+                                                     }
+                                                     else{
+                                                             if($user->type == 0){
+                                                                $useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                             }
+                                                             else{
+                                                                 $useme1 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                             }
+                                                         //$useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->id.'" style="background:'.@$user->background.';color:'.@$user->color.'">'.@$user->full_name .'</a>';
+                                                     }
+                                                }
+                                            ?>
+                                            @endforeach
+                                            <?php echo $useme1 . $useme2; ?>
+                                        </td>
+                                        <?php 
+                                            if($row->status == "1"){
+                                                $color = "background:#12ff00;color:#333;";
+                                            }else{
+                                                $color = "background:#2196f366;color:#333;";
+                                            }
+                                            if($row->paybyus == "1"){
+                                                $color = "background:#fffc00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <?php 
+                                            $cs_clore0 = $color; 
+                                            if($row->sender_paid == "1" && $row->paybyus == "1"){
+                                                $cs_clore0 = "background:#12ff00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <td class="user psw" style="{{$cs_clore0}}">
+                                            @if($row->commission != 0 || $row->admin_commission != 0)
+                                                <div>
+                                                    <span>P</span>
+                                                    <span class="text-xst font-weight-bold mb-0 _0">{{$row->price_type}} {{ $row->price }} 
+                                                        @if($row->sender_paid == "1" && $row->paybyus == "1")
+                                                        <i class="fa fa-arrow-right"></i>
+                                                        @elseif($row->paybyus == "0" && $row->revenue_partner != null)
+                                                        <i class="fa fa-arrow-left"></i>
+                                                        @elseif($row->paybyus == "1" && $row->sender_paid == 0 && isset($row->sebder_user) && $row->sebder_user != null)
+                                                        <i class="fa fa-clock-o"></i>
+                                                        @endif
+                                                    </span>
+                                                </div>
+                                                @if($row->commission != 0)
+                                                <div>
+                                                    <span>C</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{$row->commission_type}} {{ $row->commission }}</span>
+                                                </div>
+                                                @endif
+                                                @if($row->admin_commission != 0)
+                                                <div>
+                                                    <span>AC</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{$row->admin_commission_type}} {{ $row->admin_commission }}</span>
+                                                </div>
+                                                @endif
+                                            @endif
+                                            @if($row->commission == 0 &&  $row->admin_commission == 0)
+                                                <p class="text-xst font-weight-bold mb-0 _1">{{ $row->price_type." ".$row->price }}
+                                                    @if($row->sender_paid == "1" && $row->paybyus == "1")
+                                                    <i class="fa fa-arrow-right"></i>
+                                                    @elseif($row->paybyus == "0" && $row->revenue_partner != null)
+                                                    <i class="fa fa-arrow-left"></i>
+                                                    @elseif($row->paybyus == "1" && $row->sender_paid == 0 && isset($row->sebder_user) && $row->sebder_user != null)
+                                                    <i class="fa fa-clock-o"></i>
+                                                    @endif
+                                                </p>
+                                            @endif
+                                        </td>
+                                        @if((isset($request["d_user"]) && $request["d_user"] != null))
+                                        
+                                        <?php 
+                                            $cs_clore = $color; 
+                                            if($row->leader_paid == "1" && $row->paybyus == "1"){
+                                                $cs_clore = "background:#12ff00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <td class="user psw" style="{{$cs_clore}}">
+                                            @if($row->net_tl != 0)
+                                                <div>
+                                                    <span>{{$row->price_type}}</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $row->net }}</span>
+                                                </div>
+                                                <div>
+                                                    <span>TL</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $row->net_tl }}</span>
+                                                </div>
+                                            @endif
+                                            @if($row->net_tl == 0)
+                                            <p class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->net }}</p>
+                                            @endif
+                                        </td>
+                                        
+                                        <?php 
+                                            $cs_clore1 = $color; 
+                                            if($row->status == "1" && $row->paybyus == "1"){
+                                                $cs_clore1 = "background:#12ff00;color:#333;";
+                                            }
+                                        ?>
+                                        
+                                        <td class="user psw" style="{{$cs_clore1}}">
+                                            @if($row->admin_partner != null || $row->revenue_partner != null)
+                                                <div>
+                                                    <span>CP</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->revenue }}</span>
+                                                </div>
+                                            @endif
+                                            @if(isset($row->revenue_partner) && $row->revenue_partner != null)
+                                                <div>
+                                                    <span>PP</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->revenue_partner }}</span>
+                                                </div>
+                                            @endif
+                                            @if(isset($row->admin_partner) && $row->admin_partner != null)
+                                                <div>
+                                                    <span>AP</span>
+                                                    <span class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->admin_partner }}</span>
+                                                </div>
+                                                @endif
+                                            @if($row->admin_partner == null && $row->revenue_partner == null)
+                                                <p class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->revenue }}</p>
+                                            @endif
+                                        </td>
+                                        @endif
+                                        <!-- <td class="text-center" style="{{$color}}">
+                                            <p class="text-xst font-weight-bold mb-0">{{ @$row->country->name }}</p>
+                                        </td>
+                                        <td class="text-center" style="{{$color}}">
+                                            @if($row->paybyus == "1")
+                                                <p class="text-xst font-weight-bold mb-0"><i class="fa fa-check"></i></p>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="form-check form-switch ps-0 check_center">
+                                                <input class="form-check-input ms-auto is-displayed"
+                                                  data-url="{{ route('panel.movement.change_status' , $row->movement_id ) }}"
+                                                  type="checkbox" id="flexSwitchCheckDefault"
+                                                  {{ $row->status == 1 ? 'checked' : ''}}>
+                                            </div>
+                                        </td> -->
+                                        <td class="text-center">
+                                            @if($row->commit == 1)
+                                            <i class="fa fa-check" style="color:#12ff00"></i>
+                                            @else
+                                            <i class="fa fa-exclamation" aria-hidden="true" style="color:#ff0000;"></i>
+                                            @endif
+                                        </td>
+                                        <td class="text-center">
+                                            <a href="{{ route('panel.movement.add_new' , $row->movement_id ) }}" class="mx-1" target="_blank" data-bs-toggle="tooltip"
+                                                data-bs-original-title="Edit Movement">
+                                                <i class="fas fa-user-edit text-secondary"></i>
+                                            </a>
+                                            <a data-url="{{ route('panel.movement.delete' , $row->movement_id ) }}" class="mx-1 delete" data-bs-toggle="tooltip"
+                                                data-bs-original-title="Delete Movement">
+                                                <i class="cursor-pointer fas fa-trash text-danger"></i>
+                                            </a>
+                                            <?php 
+                                                $sho = false;
+                                                $date = Carbon\Carbon::parse($row->date);
+                                                $now = Carbon\Carbon::now();
+                                                //dd($date , $now , $date >= $now);
+                                                //if($date >= $now){
+                                                    $diff = $date->diffInDays($now);
+                                                    if($diff == 0){
+                                                        $sho = true;
+                                                    }
+                                                    
+                                                    if($row->to_date != null){
+                                                        $to_date = Carbon\Carbon::parse($row->to_date);
+                                                        $now2 = Carbon\Carbon::now();
+                                                        $diff2 = $to_date->diffInDays($now2);
+                                                        if($diff2 == 0 && $diff >= 0){
+                                                            $sho = true;
+                                                        }
+                                                    }
+                                                //}
+                                            ?>
+                                            @if($sho)
+                                            <div class="form-check form-switch ps-0 check_center">
+                                                <input class="form-check-input ms-auto is-displayed"
+                                                  data-url="{{ route('panel.movement.change_status' , $row->movement_id ) }}"
+                                                  type="checkbox" id="flexSwitchCheckDefault"
+                                                  {{ $row->completed == 1 ? 'checked' : ''}}>
+                                            </div>
+                                            @endif
+                                            
+                                        </td>
+                                    </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <!-- </div> -->
+                            
+                            @if(isset($ispartner))
+                                @if($ispartner->id == 5 || $ispartner->type == 3)
+                                @else
+                                <div class="sumtions">
+                                    <table class="table align-items-center mt-4 td-5">
+                                        <thead>
+                                            <tr class="bg">
+                                                <th colspan="10">
+                                                    All Entries Sum Nets
+                                                </th>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Total</th>
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USD</th>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes , null , 'TL') != 0)
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TURKISH LIRA</th>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes , null , '€') != 0)
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">EURO</th>
+                                                @endif
+                                                @endif
+                                                
+                                                @if(sumAmountByCurrencyAllsNets($yes , null , '£') != 0)
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">POUND</th>
+                                                @endif
+                                                @endif
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-xsm font-weight-bold mb-0" >DIRECT Profit</td>
+                                                <td class="text-xsm font-weight-bold mb-0" style="background:#12ff00;color:#333;">{{CountofTypeNets($yes , "net2" , '$')}}</td>
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                    <td class="text-xsm font-weight-bold mb-0" style="background:#12ff00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net2" , '$')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes , null , 'TL') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0" style="background:#12ff00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net2" , 'TL')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes , null , '€') != 0)
+                                                    @if(isset($ispartner) && $ispartner->id != "25")
+                                                        <td class="text-xsm font-weight-bold mb-0" style="background:#12ff00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net2" , '€')}}</td>
+                                                    @endif
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes , null , '£') != 0)
+                                                    @if(isset($ispartner) && $ispartner->id != "25")
+                                                        <td class="text-xsm font-weight-bold mb-0" style="background:#12ff00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net2" , '£')}}</td>
+                                                    @endif
+                                                @endif
+                                            </tr>
+                                            <tr>
+                                                <td class="text-xsm font-weight-bold mb-0"> Paid By Us Net</td>
+                                                <td class="text-xsm font-weight-bold mb-0" style="background:#fffc00;color:#333;">{{CountofTypeNets($yes , "net" , '$')}}</td>
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <td class="text-xsm font-weight-bold mb-0" style="background:#fffc00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net" , '$')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes ,null, 'TL') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0" style="background:#fffc00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net" , 'TL')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes ,null, '€') != 0)
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <td class="text-xsm font-weight-bold mb-0" style="background:#fffc00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net" , '€')}}</td>
+                                                 @endif
+                                                 @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes ,null, '£') != 0)
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <td class="text-xsm font-weight-bold mb-0" style="background:#fffc00;color:#333;">{{sumAmountByCurrencyAllsNets($yes , "net" , '£')}}</td>
+                                                 @endif
+                                                 @endif
+                                            </tr>
+                                        </tbody>
+                                        <tfoot>
+                                            <tr class="bg2">
+                                                <td class="text-xsm font-weight-bold mb-0">Sum</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{CountofTypeNets($yes , null , '$')}}</td>
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllsNets($yes ,null, '$')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes ,null, 'TL') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllsNets($yes ,null, 'TL')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes , null, '€') != 0)
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllsNets($yes ,null, '€')}}</td>
+                                                @endif
+                                                @endif
+                                                @if(sumAmountByCurrencyAllsNets($yes , null, '£') != 0)
+                                                @if(isset($ispartner) && $ispartner->id != "25")
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllsNets($yes , null, '£')}}</td>
+                                                @endif
+                                                @endif
+                                            </tr>
+                                        </tfoot>
+                                    </table>
+                                </div>
+                                @endif
+                            @endif
+                            
+                            @if((isset($request["d_user"]) && $request["d_user"] != null) && (isset($user_m) && $user_m->type != 1) && auth()->user()->type != 1)
+                            @else
+                            <div class="sumtions">
+                                <?php 
+                                $styel = 'max-width: 182px !important;    width: 2.8% !important;';
+                                ?>
+                                <table class="table align-items-center mt-4  td-5">
+                                    <thead>
+                                        <tr class="bg">
+                                            <th colspan="10">
+                                             Profit
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            @if(@$ispartner->id != 8)
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Type</th>
+                                            @endif
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="{{@$ispartner->id == 8 ? $styel : ''}}">Total</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USD</th>
+                                            @if(@$ispartner->id != 8)
+                                                @if(sumAmountByCurrencyAll($yes , null, 'TL') != 0)
+                                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TURKISH LIRA</th>
+                                                @endif
+                                                @if(sumAmountByCurrencyAll($yes , null, '€') != 0)
+                                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">EURO</th>
+                                                @endif
+                                                @if(sumAmountByCurrencyAll($yes , null, '£') != 0)
+                                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">POUND</th>
+                                                @endif
+                                            @endif
+                                        </tr> 
+                                    </thead>
+                                    <tbody>
+                                        <?php $cos = 0;$typs = ""; ?>
+                                        @foreach($types as $row_type)
+                                            @if(CountofType($yes , $row_type , '$') != null)
+                                            <?php $cos++;$typs=$row_type;?>
+                                            @endif
+                                        @endforeach
+                                        @if($cos != 1)
+                                        @foreach($types as $row_type)
+                                        @if(CountofType($yes , $row_type , '$') != null)
+                                        
+                                            <?php 
+                                                $st1 = sumAmountByCurrencyCOfType($yes , $row_type , '$');
+                                                $st2 = sumAmountByCurrencyCOfType($yes , $row_type , 'TL');
+                                                $st3 = sumAmountByCurrencyCOfType($yes , $row_type , '€');
+                                                $st4 = sumAmountByCurrencyCOfType($yes , $row_type , '£');
+                                            ?>
+                                            
+                                        <tr>
+                                            
+                                            @if(@$ispartner->id != 8)
+                                            <td class="text-xsm font-weight-bold mb-0" {{ $row_type == "Driver Tours" || ($st1 != null || $st2 != null || $st3 != null || $st4 != null) ? 'rowspan=2' : "" }}>{{ $row_type }}</td>
+                                            @endif
+                                                <td class="text-xsm font-weight-bold mb-0" style="{{@$ispartner->id == 8 ? $styel : ''}}" {{ $row_type == "Driver Tours" || ($st1 != null || $st2 != null || $st3 != null || $st4 != null) ? 'rowspan=2' : "" }}>{{CountofType($yes , $row_type , '$')}}</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyPOfType($yes , $row_type , '$')}}</td>
+                                            @if(@$ispartner->id != 8)
+                                                @if(sumAmountByCurrencyAll($yes , null, 'TL') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyPOfType($yes , $row_type , 'TL')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAll($yes , null, '€') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyPOfType($yes , $row_type , '€')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAll($yes , null, '£') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyPOfType($yes , $row_type , '£')}}</td>
+                                                @endif
+                                            @endif
+                                        </tr>
+                                            @if( $row_type == "Driver Tours" || ($st1 != null || $st2 != null || $st3 != null || $st4 != null))
+                                            <tr>
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyCOfType($yes , $row_type , '$')}}</td>
+                                                @if(@$ispartner->id != 8)
+                                                    @if(sumAmountByCurrencyAll($yes , null, 'TL') != 0)
+                                                    <td class="text-xsm font-weight-bold mb-0" style="background: #2196f366 !important;">{{sumAmountByCurrencyCOfType($yes , $row_type , 'TL')}}</td>
+                                                    @endif
+                                                    @if(sumAmountByCurrencyAll($yes , null, '€') != 0)
+                                                    <td class="text-xsm font-weight-bold mb-0" style="background: #2196f366 !important;">{{sumAmountByCurrencyCOfType($yes , $row_type , '€')}}</td>
+                                                    @endif
+                                                    @if(sumAmountByCurrencyAll($yes , null, '£') != 0)
+                                                    <td class="text-xsm font-weight-bold mb-0" style="background: #2196f366 !important;">{{sumAmountByCurrencyCOfType($yes , $row_type , '£')}}</td>
+                                                    @endif
+                                                @endif
+                                            </tr>
+                                            @endif
+                                        @endif
+                                        @endforeach
+                                        @endif
+                                    </tbody>
+                                    <tfoot>
+                                        <tr class="bg2">
+                                            
+                                            @if(@$ispartner->id != 8)
+                                            <td class="text-xsm font-weight-bold mb-0">Sum</td>
+                                            @endif
+                                            <td class="text-xsm font-weight-bold mb-0" style="{{@$ispartner->id == 8 ? $styel : ''}}">{{CountofType($yes , "d" , '$')}}</td>
+                                            <td class="text-xsm font-weight-bold mb-0 ">
+                                                {{sumAmountByCurrencyAll($yes ,null, '$')}}
+                                            </td>
+                                            @if(@$ispartner->id != 8)
+                                                @if(sumAmountByCurrencyAll($yes , null, 'TL') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAll($yes ,null, 'TL')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAll($yes , null, '€') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAll($yes ,null, '€')}}</td>
+                                                @endif
+                                                @if(sumAmountByCurrencyAll($yes , null, '£') != 0)
+                                                <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAll($yes , null, '£')}}</td>
+                                                @endif
+                                            @endif
+                                        </tr>
+                                        
+                                        @if(isset($ispartner->id) && $ispartner->id == 5)
+                                        <tr>
+                                            <td class="text-xsm font-weight-bold mb-0">Admin C</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{CountofTypeAdminAC($yes , null , '$')}}</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdminAC($yes ,null, '$')}}</td>
+                                            @if(@$ispartner->id != 8)
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdminAC($yes ,null, 'TL')}}</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdminAC($yes ,null, '€')}}</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdminAC($yes , null, '£')}}</td>
+                                            @endif
+                                        </tr>
+                                        <tr class="bg2">
+                                            <td class="text-xsm font-weight-bold mb-0">Admin Sum</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{CountofTypeAdmin($yes , null , '$')}}</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdmin($yes ,null, '$')}}</td>
+                                            @if(@$ispartner->id != 8)
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdmin($yes ,null, 'TL')}}</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdmin($yes ,null, '€')}}</td>
+                                            <td class="text-xsm font-weight-bold mb-0">{{sumAmountByCurrencyAllAdmin($yes , null, '£')}}</td>
+                                            @endif
+                                        </tr>
+                                        @endif
+                                    </tfoot>
+                                </table>
+                            </div>
+                            @endif
+                            
+                        @endforeach
+                    @endforeach
+                    @if(isset($ispartner) && ($ispartner->type == 3 || $ispartner->type == 5))
+                    
+                        
+                        @foreach($data_y as $year)
+                            <?php $con = 1; ?>
+                            @foreach($data_e as $key => $row)
+                                @if($row->new_date == $year->new_date && $row->movement_id == null)
+                                <?php $con++; ?>
+                                @endif
+                            @endforeach
+                        @if($con != 1)
+                            <table class="table align-items-center mb-2">
+                                <thead>
+                                    <tr class="bg">
+                                        <th colspan="10">Transfer {{ $year->new_date }}</th>
+                                    </tr>
+                                    <tr>
+                                        <!--<th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">-->
+                                        <!--    ID-->
+                                        <!--</th>-->
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:15%">
+                                            Date
+                                        </th>
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:55%">
+                                            Ammount
+                                        </th>
+                                        <!--<th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:15%">-->
+                                        <!--    Admin-->
+                                        <!--</th>-->
+                                        <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:15%">
+                                            Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <?php $con = 1; ?>
+                                    @foreach($data_e as $key => $row)
+                                        @if($row->new_date == $year->new_date && $row->movement_id == null)
+                                        <tr>
+                                            <!--<td class="ps-4">-->
+                                            <!--    <p class="text-xs font-weight-bold mb-0">{{ $con }}</p>-->
+                                            <!--</td>-->
+                                            <td class="ps-4" style="background:{{$row->m_user->background}} !important;color:{{$row->m_user->color}};">
+                                                <p class="text-xs font-weight-bold mb-0">{{  date("d M", strtotime($row->date)) }}</p>
+                                            </td>
+                                            <td class="ps-4">
+                                                <p class="text-xs font-weight-bold mb-0">{{  $row->price_type . " " .$row->price }}</p>
+                                            </td>
+                                            <!--<td class="ps-4">-->
+                                            <!--    <p class="text-xs font-weight-bold mb-0">{{  $row->m_user->full_name }}</p>-->
+                                            <!--</td>-->
+                                            <td class="text-center">
+                                                <a href="{{ route('panel.cash.add_new' , $row->income_id) }}" target="_blank" class="mx-1" data-bs-toggle="tooltip"
+                                                    data-bs-original-title="Edit cash">
+                                                    <i class="fas fa-user-edit text-secondary"></i>
+                                                </a>
+                                                <a data-url="{{ route('panel.cash.delete' , $row->income_id) }}" class="mx-1 delete" data-bs-toggle="tooltip"
+                                                    data-bs-original-title="Delete cash">
+                                                    <i class="cursor-pointer fas fa-trash text-danger"></i>
+                                                </a>
+                                            </td> 
+                                        </tr>
+                                        <?php $con++; ?>
+                                        @endif
+                                    @endforeach
+                                </tbody>
+                            </table>
+                            <div class="sumtions">
+                                <table class="table align-items-center mt-4">
+                                    <thead>
+                                        <tr class="bg">
+                                            <th  colspan="10">Total</th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width: 17%;">Total</th>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USD</th>
+                                            <!--<th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TURKISH LIRA</th>-->
+                                            <!--<th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">EURO</th>-->
+                                            <!--<th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">POUND</th>-->
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            <td class="text-xs font-weight-bold mb-0">UnPaid</td>
+                                            <td class="text-xs font-weight-bold mb-0" style="background: #fffc00;">{{ $_1_1 = sumAmountByCurrencyMove($moves_data ,null,0, '$')}}</td>
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_1_2 = sumAmountByCurrencyMove($moves_data ,null,0, 'TL')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_1_3 = sumAmountByCurrencyMove($moves_data ,null,0, '€')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_1_4 = sumAmountByCurrencyMove($moves_data ,null,0, '£')}}</td>-->
+                                        </tr>
+                                        <tr>
+                                            <td class="text-xs font-weight-bold mb-0">Paid</td>
+                                            <td class="text-xs font-weight-bold mb-0" style="background: #12ff00;">{{ $_2_1 = sumAmountByCurrencyMove($moves_data ,null,1, '$')}}</td>
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_2_2 = sumAmountByCurrencyMove($moves_data ,null,1, 'TL')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_2_3 = sumAmountByCurrencyMove($moves_data ,null,1, '€')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_2_4 = sumAmountByCurrencyMove($moves_data ,null,1, '£')}}</td>-->
+                                        </tr>
+                                        @if(sumAmountByCurrencyMove($moves_data ,"revenue_partner", 0, '$') != 0)
+                                        <tr>
+                                            <td class="text-xs font-weight-bold mb-0">Profit</td>
+                                            <td class="text-xs font-weight-bold mb-0">{{ $_4_1 = sumAmountByCurrencyMove($moves_data ,"revenue_partner", 0, '$')}}</td>
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_2 = sumAmountByCurrencyMove($data_e ,"revenue_partner", 0, 'TL')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_3 = sumAmountByCurrencyMove($data_e ,"revenue_partner", 0, '€')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_4 = sumAmountByCurrencyMove($data_e ,"revenue_partner", 0, '£')}}</td>-->
+                                        </tr>
+                                        @endif
+                                        @if(sumAmountByCurrencyInc($data_e ,null, '$') != 0)
+                                        <!--<tr>-->
+                                        <!--    <td class="text-xs font-weight-bold mb-0">Transfer</td>-->
+                                        <!--    <td class="text-xs font-weight-bold mb-0">{{ $_3_1 = sumAmountByCurrencyInc($data_e ,null, '$')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_2 = sumAmountByCurrencyInc($data_e ,null, 'TL')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_3 = sumAmountByCurrencyInc($data_e ,null, '€')}}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_4 = sumAmountByCurrencyInc($data_e ,null, '£')}}</td>-->
+                                        <!--</tr>-->
+                                        @endif
+                                        <!--<tr class="bg2">-->
+                                        <!--    <td class="text-xs font-weight-bold mb-0">Sum</td>-->
+                                        <!--    <td class="text-xs font-weight-bold mb-0">{{ ($_3_1+$_4_1) - ($_1_1 + $_2_1) }}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_2 - ($_1_2 + $_2_2) }}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_3 - ($_1_3 + $_2_3) }}</td>-->
+                                            <!--<td class="text-xs font-weight-bold mb-0">{{ $_3_4 - ($_1_4 + $_2_4) }}</td>-->
+                                        <!--</tr>-->
+                                    </tbody>
+                                </table>
+                            </div>
+                        @endif
+                        @endforeach
+                    @endif
+                    
+                    @if(isset($ispartner) && $ispartner->type == 5)
+                        @foreach($ahlandatas as $key=>$ye)
+                            @foreach($ye as $key_yes => $yes)
+                                <?php
+                                    $iis=0;
+                                    $iiss=0;
+                                    $iisss=0;
+                                    $iissss=0;
+                                    
+                                    
+                                    $date="";
+                                    foreach($ye as $k=>$it){
+                                        $date = $k;
+                                    }
+                                ?>
+                                <table class="table align-items-center mt-4">
+                                    <thead>
+                                        <tr class="bg">
+                                            <th colspan="12">
+                                                {{@$ispartner->full_name}}<br>
+                                                {{$date}}
+                                            </th>
+                                        </tr>
+                                        <tr>
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                ID
+                                            </th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:60px;padding: 0;">
+                                                Date
+                                            </th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="padding: 0;width:15%;">
+                                                Clinet Name
+                                            </th>
+                                            <th class="" style="width:50px;padding: 0;">
+                                                <i class="fa fa-flag"></i>
+                                            </th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:240px;padding: 0;">
+                                                Service Description
+                                            </th>
+                                            <!--<th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">-->
+                                            <!--    Type-->
+                                            <!--</th>-->
+                                            
+                                            @if(isset($ispartner->type) && $ispartner->type == 1)
+                                            @else
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 p-1"  style="width:50px;">
+                                                Admin
+                                            </th>
+                                            @endif
+                                            <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" style="width:8%;padding: 0 !important;">
+                                                User
+                                            </th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:70px;padding: 0;">
+                                                Price
+                                            </th>
+                                            @if((isset($request["d_user"]) && $request["d_user"] != null))
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:70px;padding: 0;">
+                                                Net
+                                            </th>
+                                            <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:70px;padding: 0;">
+                                                Profit
+                                            </th>
+                                            
+                                            <!--<th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">-->
+                                            <!--    P Profit-->
+                                            <!--</th>-->
+                                            @endif
+                                            <!-- <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                Country
+                                            </th>
+                                            <th class="last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                PayByUs
+                                            </th>
+                                            <th class="last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">
+                                                Status
+                                            </th> -->
+                                            <!-- <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 p-1">
+                                                Commission
+                                            </th> -->
+                                            <th class="" style="width:50px;padding: 0;">
+                                                <i class="fa fa-edit"></i>
+                                            </th>
+                                            <th class="last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:60px;padding: 0;">
+                                                Action
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach($yes as $key => $row)
+                                            <?php
+                                                $colors = "#ffffff";
+                                                if($row->color == "1"){
+                                                    $colors = "#ff0000";
+                                                }
+                                                else if($row->color == "2"){
+                                                    $colors = "#fffc00";
+                                                }
+                                                else if($row->color == "3"){
+                                                    $colors = "#12ff00";
+                                                }
+                                                else if($row->color == "4"){
+                                                    $colors = "#00fff0";
+                                                }
+                                                else if($row->color == "5"){
+                                                    $colors = "#ffc107";
+                                                }
+                                                $color = "";
+                                                if($colors != "#ffffff"){
+                                                    $color = "background:".$colors.";color:#fff;";
+                                                    if($colors != "#ff0000"){
+                                                        $color = "background:".$colors.";color:#333;";
+                                                    }
+                                                }
+                                                if($colors == "#ff0000"){
+                                                    $color = "background:".$colors.";color:#fff;";
+                                                }
+                                            ?>
+                                            <tr id="tr_{{ date('d-M', strtotime($row->date)) }}">
+                                                <td style="{{$color}}">
+                                                    <p class="text-xs font-weight-bold mb-0">{{ $OldCount + $key + 1 }}</p>
+                                                </td>
+                                                <td class="text-center" style="{{$color}}">
+                                                    <p class="text-xst font-weight-bold mb-0">{{ date("d M", strtotime($row->date)) }}</p>
+                                                    @if($row->to_date != null)
+                                                    <p class="text-xst font-weight-bold mb-0">{{ date("d M", strtotime($row->to_date)) }}</p>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center"  style="{{$color}}">
+                                                    <p class="text-xst font-weight-bold mb-0">
+                                                        {{ $row->customer  }}
+                                                        </p>
+                                                </td>
+                                                <td class="text-center" style="{{$color}}">
+                                                        <span class="flag">
+                                                            <img src="{{@$row->country->avatar}}" />
+                                                        </span>
+                                                </td>
+                                                <td class="text-center" style="{{$color}}">
+                                                    <p class="text-xst font-weight-bold mb-0">{{ $row->description }}</p>
+                                                </td>
+                                                <!--<td class="text-center" style="{{$color}}">-->
+                                                <!--    <p class="text-xsm font-weight-bold mb-0">{{ $row->type }}</p>-->
+                                                <!--</td>-->
+                                                <?php 
+                                                
+                                                    $colorv = "background:".@$row->m_user->background.";color:#fff;";
+                                                ?>
+                                                
+                                                @if(isset($ispartner->type) && $ispartner->type == 1)
+                                                @else
+                                                <td class="user" style="{{$colorv}}">
+                                                    <a class="text-xst font-weight-bold mb-0"  target="_blank" href="{{ url('/admin/movement?d_user='.$row->m_user->id)}}" style="background:{{@$row->m_user->background}};color:{{@$row->m_user->color}}">{{ $row->m_user->user_name }}</a>
+                                                </td>
+                                                @endif
+                                                
+                                                <?php
+                                                    $st = "";
+                                                    if(sizeof($row->users) == 1){
+                                                        $usw = $row->users->first();
+                                                        $st = 'background:'.@$usw->background.';color:'.@$usw->color.'';
+                                                    }else if(isset($request["d_user"])){
+                                                        $usw = $row->users->where("id","!=",$request["d_user"])->first();
+                                                        $st = 'background:'.@$usw->background.';color:'.@$usw->color.'';
+                                                    }
+                                                ?>
+                                                <td class="user" style="{{ $st }}">
+                                                    <?php
+                                                        $useme1 = "";
+                                                        $useme2 = "";
+                                                        if(isset($request["d_user"]) && sizeof($row->users) == 1){
+                                                            if($request["d_user"] == $row->users->first()->id){
+                                                                $useme2 = '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$row->users->first()->id.'" style="background:'.$row->users->first()->background.';color:'.$row->users->first()->color.'">DIRECT</a>';
+                                                            }else{
+                                                                $useme2 = '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$row->users->first()->id.'" style="background:'.$row->users->first()->background.';color:'.$row->users->first()->color.'">'.$row->users->first()->full_name .'</a>';
+                                                            }
+                                                        }
+                                                    ?>
+                                                    
+                                                    @foreach($row->musers as $user)
+                                                    <?php
+                                                        if(isset($request["d_user"]) && sizeof($row->users) == 1){
+                                                        }
+                                                        else{
+                                                             if(isset($request["d_user"])){
+                                                                 if($request["d_user"] == $user->id){
+                                                                 }else{
+                                                                     if($user->type == 0){
+                                                                     $useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                                     }
+                                                                     else{
+                                                                         $useme1 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                                     }
+                                                                 }
+                                                             }
+                                                             else{
+                                                                     if($user->type == 0){
+                                                                        $useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                                     }
+                                                                     else{
+                                                                         $useme1 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->user->id.'" style="background:'.@$user->user->background.';color:'.@$user->user->color.'">'.@$user->user->full_name .'</a>';
+                                                                     }
+                                                                 //$useme2 .= '<a class="text-xsm font-weight-bold mb-0" target="_blank" href="/admin/movement?d_user='.$user->id.'" style="background:'.@$user->background.';color:'.@$user->color.'">'.@$user->full_name .'</a>';
+                                                             }
+                                                        }
+                                                    ?>
+                                                    @endforeach
+                                                    <?php echo $useme1 . $useme2; ?>
+                                                </td>
+                                                <?php 
+                                                    if($row->status == "1"){
+                                                        $color = "background:#12ff00;color:#333;";
+                                                    }else{
+                                                        $color = "background:#2196f366;color:#333;";
+                                                    }
+                                                    if($row->paybyus == "1"){
+                                                        $color = "background:#fffc00;color:#333;";
+                                                    }
+                                                ?>
+                                                
+                                                <?php 
+                                                    $cs_clore0 = $color; 
+                                                    if($row->sender_paid == "1" && $row->paybyus == "1"){
+                                                        $cs_clore0 = "background:#12ff00;color:#333;";
+                                                    }
+                                                ?>
+                                                
+                                                <td class="user psw" style="{{$cs_clore0}}">
+                                                    @if($row->commission != 0 || $row->admin_commission != 0)
+                                                        <div>
+                                                            <span>P</span>
+                                                            <span class="text-xst font-weight-bold mb-0 _0">{{$row->price_type}} {{ $row->price }} 
+                                                                @if($row->sender_paid == "1" && $row->paybyus == "1")
+                                                                <i class="fa fa-arrow-right"></i>
+                                                                @elseif($row->paybyus == "0" && $row->revenue_partner != null)
+                                                                <i class="fa fa-arrow-left"></i>
+                                                                @elseif($row->paybyus == "1" && $row->sender_paid == 0 && isset($row->sebder_user) && $row->sebder_user != null)
+                                                                <i class="fa fa-clock-o"></i>
+                                                                @endif
+                                                            </span>
+                                                        </div>
+                                                        @if($row->commission != 0)
+                                                        <div>
+                                                            <span>C</span>
+                                                            <span class="text-xst font-weight-bold mb-0">{{$row->commission_type}} {{ $row->commission }}</span>
+                                                        </div>
+                                                        @endif
+                                                        @if($row->admin_commission != 0)
+                                                        <div>
+                                                            <span>AC</span>
+                                                            <span class="text-xst font-weight-bold mb-0">{{$row->admin_commission_type}} {{ $row->admin_commission }}</span>
+                                                        </div>
+                                                        @endif
+                                                    @endif
+                                                    @if($row->commission == 0 &&  $row->admin_commission == 0)
+                                                        <p class="text-xst font-weight-bold mb-0 _1">{{ $row->price_type." ".$row->price }}
+                                                            @if($row->sender_paid == "1" && $row->paybyus == "1")
+                                                            <i class="fa fa-arrow-right"></i>
+                                                            @elseif($row->paybyus == "0" && $row->revenue_partner != null)
+                                                            <i class="fa fa-arrow-left"></i>
+                                                            @elseif($row->paybyus == "1" && $row->sender_paid == 0 && isset($row->sebder_user) && $row->sebder_user != null)
+                                                            <i class="fa fa-clock-o"></i>
+                                                            @endif
+                                                        </p>
+                                                    @endif
+                                                </td>
+                                                @if((isset($request["d_user"]) && $request["d_user"] != null))
+                                                
+                                                <?php 
+                                                    $cs_clore = $color; 
+                                                    if($row->leader_paid == "1" && $row->paybyus == "1"){
+                                                        $cs_clore = "background:#12ff00;color:#333;";
+                                                    }
+                                                ?>
+                                                
+                                                <td class="user psw" style="{{$cs_clore}}">
+                                                    @if($row->net_tl != 0)
+                                                        <div>
+                                                            <span>{{$row->price_type}}</span>
+                                                            <span class="text-xst font-weight-bold mb-0">{{ $row->net }}</span>
+                                                        </div>
+                                                        <div>
+                                                            <span>TL</span>
+                                                            <span class="text-xst font-weight-bold mb-0">{{ $row->net_tl }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if($row->net_tl == 0)
+                                                    <p class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->net }}</p>
+                                                    @endif
+                                                </td>
+                                                
+                                                <?php 
+                                                    $cs_clore1 = $color; 
+                                                    if($row->status == "1" && $row->paybyus == "1"){
+                                                        $cs_clore1 = "background:#12ff00;color:#333;";
+                                                    }
+                                                ?>
+                                                
+                                                <td class="user psw" style="{{$cs_clore1}}">
+                                                    @if($row->admin_partner != null || $row->revenue_partner != null)
+                                                        <div>
+                                                            <span>CP</span>
+                                                            <span class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->revenue }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(isset($row->revenue_partner) && $row->revenue_partner != null)
+                                                        <div>
+                                                            <span>PP</span>
+                                                            <span class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->revenue_partner }}</span>
+                                                        </div>
+                                                    @endif
+                                                    @if(isset($row->admin_partner) && $row->admin_partner != null)
+                                                        <div>
+                                                            <span>AP</span>
+                                                            <span class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->admin_partner }}</span>
+                                                        </div>
+                                                        @endif
+                                                    @if($row->admin_partner == null && $row->revenue_partner == null)
+                                                        <p class="text-xst font-weight-bold mb-0">{{ $row->price_type." ".$row->revenue }}</p>
+                                                    @endif
+                                                </td>
+                                                @endif
+                                                <!-- <td class="text-center" style="{{$color}}">
+                                                    <p class="text-xst font-weight-bold mb-0">{{ @$row->country->name }}</p>
+                                                </td>
+                                                <td class="text-center" style="{{$color}}">
+                                                    @if($row->paybyus == "1")
+                                                        <p class="text-xst font-weight-bold mb-0"><i class="fa fa-check"></i></p>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    <div class="form-check form-switch ps-0 check_center">
+                                                        <input class="form-check-input ms-auto is-displayed"
+                                                          data-url="{{ route('panel.movement.change_status' , $row->movement_id ) }}"
+                                                          type="checkbox" id="flexSwitchCheckDefault"
+                                                          {{ $row->status == 1 ? 'checked' : ''}}>
+                                                    </div>
+                                                </td> -->
+                                                <td class="text-center">
+                                                    @if($row->commit == 1)
+                                                    <i class="fa fa-check" style="color:#12ff00"></i>
+                                                    @else
+                                                    <i class="fa fa-exclamation" aria-hidden="true" style="color:#ff0000;"></i>
+                                                    @endif
+                                                </td>
+                                                <td class="text-center">
+                                                    <a href="{{ route('panel.movement.add_new' , $row->movement_id ) }}" class="mx-1" target="_blank" data-bs-toggle="tooltip"
+                                                        data-bs-original-title="Edit Movement">
+                                                        <i class="fas fa-user-edit text-secondary"></i>
+                                                    </a>
+                                                    <a data-url="{{ route('panel.movement.delete' , $row->movement_id ) }}" class="mx-1 delete" data-bs-toggle="tooltip"
+                                                        data-bs-original-title="Delete Movement">
+                                                        <i class="cursor-pointer fas fa-trash text-danger"></i>
+                                                    </a>
+                                                    <?php 
+                                                        $sho = false;
+                                                        $date = Carbon\Carbon::parse($row->date);
+                                                        $now = Carbon\Carbon::now();
+                                                        //dd($date , $now , $date >= $now);
+                                                        //if($date >= $now){
+                                                            $diff = $date->diffInDays($now);
+                                                            if($diff == 0){
+                                                                $sho = true;
+                                                            }
+                                                            
+                                                            if($row->to_date != null){
+                                                                $to_date = Carbon\Carbon::parse($row->to_date);
+                                                                $now2 = Carbon\Carbon::now();
+                                                                $diff2 = $to_date->diffInDays($now2);
+                                                                if($diff2 == 0 && $diff >= 0){
+                                                                    $sho = true;
+                                                                }
+                                                            }
+                                                        //}
+                                                    ?>
+                                                    @if($sho)
+                                                    <div class="form-check form-switch ps-0 check_center">
+                                                        <input class="form-check-input ms-auto is-displayed"
+                                                          data-url="{{ route('panel.movement.change_status' , $row->movement_id ) }}"
+                                                          type="checkbox" id="flexSwitchCheckDefault"
+                                                          {{ $row->completed == 1 ? 'checked' : ''}}>
+                                                    </div>
+                                                    @endif
+                                                    
+                                                </td>
+                                            </tr>
+                                        @endforeach
+                                    </tbody>
+                                </table>
+                                
+                                <div class="sumtions">
+                                    <table class="table align-items-center mt-4">
+                                        <thead>
+                                            <tr>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">Total</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">USD</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">TURKISH LIRA</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">EURO</th>
+                                                <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7">POUND</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td class="text-xsm font-weight-bold mb-0">PROFIT</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ $iis += sumAmountByCurrency($yes ,@$ispartner->type, '$')}}</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ $iiss += sumAmountByCurrency($yes ,@$ispartner->type, 'TL')}}</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ $iissss += sumAmountByCurrency($yes ,@$ispartner->type, '€')}}</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ $iisss += sumAmountByCurrency($yes ,@$ispartner->type, '£')}}</td>
+                                            </tr>
+                                            <tr class="bg2">
+                                                <td class="text-xsm font-weight-bold mb-0">sum</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ ($is + $cs) - $iis }}</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ ($iss + $css) - $iiss }}</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ ($issss + $cssss) - $iissss }}</td>
+                                                <td class="text-xsm font-weight-bold mb-0">{{ ($isss + $csss) - $iisss }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            @endforeach
+                        @endforeach
+                    @endif
+                </div>
+            </div>
+        </div>
+    </div>
+  @section('panel_js')
+    <script>
+        @if(!isset($ispartner))
+            $( document ).ready(function() {
+                <?php 
+                    $das = date("Y/m/d");
+                ?>
+                var ts = '{{ date("d-M", strtotime($das)) }}';
+                if($(".table").find("#tr_"+ts).length >= 1){
+                    $( "#tr_"+ts )[0].scrollIntoView();
+                }
+            });
+        @endif
+    </script>
+  @endsection
+@stop
