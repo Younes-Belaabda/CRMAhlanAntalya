@@ -89,7 +89,7 @@
                         if($year == null){
                             $sum =  $collection->where('price_type', $currency)->where("paybyus","1");
                             if($state == 0 || $state == 1){
-                               $sum = $sum->where("sender_paid",$state); 
+                               $sum = $sum->where("sender_paid",$state);
                             }
                             $sum = $sum->sum('price');
                             return $sum;
@@ -113,13 +113,13 @@
                     }
                     function sumAmountByCurrencyInc($collection,$year, $currency,$type)
                     {
-                        
+
                         if($type == "Income"){
                             $collection = $collection->where("type","Income");
                         }else{
                             $collection = $collection->where("type","Expenses");
                         }
-                        
+
                         if($year == null){
                             return $collection->where('price_type', $currency)->whereNull("movement_id")->sum('price');
                         }
@@ -137,18 +137,18 @@
                 $sum = $collection->where('price_type', $currency)->sum("revenue_partner");
             }
             return $sum;
-        } 
-        
+        }
+
         function sumPartnersUnPaid($collection,$type, $currency)
         {
             $sum = 0;
             $collection = $collection->where("status",0);
-            
+
             if($type == "5"){
                 $sum = $collection->where('price_type', $currency)->where("paybyus" , "1")->sum("price");
             }
             return $sum;
-        } 
+        }
         function sumPartners($collection,$type, $currency)
         {
             $sum = 0;
@@ -165,8 +165,8 @@
                 //dd($sum);
                 $sum_com = $collection->where('admin_commission_type', $currency)->Where("admin_commission","!=","0")->sum("admin_commission")+
                             $collection->where('commission_type', $currency)->Where("commission","!=","0")->sum("commission");
-                            
-                $sum = $sum+  $sum_com;  
+
+                $sum = $sum+  $sum_com;
                 $sum = $sum - $collection->where('price_type', $currency)->where("paybyus" , "1")->sum("net");
             }
             return $sum;
@@ -311,17 +311,17 @@
                     $net3 = $collection->where('price_type',"!=", $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
                     $net = $net1+$net3;
                 }
-                
+
                 $net021 = $collection->where('admin_commission_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("admin_commission","!=","0")->sum("admin_commission");
                 $net021 += $collection->where('commission_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("commission","!=","0")->sum("commission");
                 $net021 += $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("revenue_partner");
                 $net02 = $net021 + $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("admin_partner");
                 $net2 = $net02 + $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("revenue");
                 if($currency == "TL"){
-                    
+
                     // $net021 = $collection->where('admin_commission_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("admin_commission","!=","0")->sum("admin_commission");
                     // $net021 += $collection->where('commission_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("commission","!=","0")->sum("commission");
-                
+
                     // $net02 = $net021+0;//$collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("admin_partner");
                     // $net4 = $net02+$collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
                     // $net5 = $collection->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
@@ -397,11 +397,11 @@
             try{
                 return $collection->where('price_type', $currency)->where("status",1)->sum("revenue")
                     + $collection->where('commission_type', $currency)->where("status",1)->sum("commission");
-        
+
             }catch(\Exception $e){
-              return "0";   
+              return "0";
             }
-            
+
         }
         function sumProfitPartnerAll($collection,$type, $currency)
         {
@@ -421,7 +421,7 @@
             $sum = $collection->where("type" , $type)->where("status",1)->where('price_type', $currency)->sum('revenue');
             return $sum == 0 ? null : $sum;
         }
-        
+
         function AdminsumAmountByCurrencyAll($collection,$type, $currency)
         {
             return $collection->where('price_type', $currency)->where("status",1)->sum("admin_partner") + $collection->where('admin_commission_type', $currency)->where("status",1)->sum("admin_commission");
@@ -436,7 +436,7 @@
             $sum = $collection->where("type" , $type)->where("status",1)->where('price_type', $currency)->sum('admin_partner');
             return $sum == 0 ? null : $sum;
         }
-        
+
 
         function CountofTypeAadminCont($collection,$type, $currency)
         {
@@ -448,7 +448,7 @@
             $sum = $collection->Where("commission","!=","0")->count();
             return $sum == 0 ? null : $sum;
         }
-        
+
         function CountofTypeAdminAC2($collection,$type, $currency)
         {
             if($type == null){
@@ -771,8 +771,8 @@ ul.munths.wn.showonmobile{
     }
 }
     </style>
-    <?php 
-    
+    <?php
+
                             $tod1 = date("M",strtotime($cur_today));
                             $tod2 = date("d",strtotime($cur_today));
                             ?>
@@ -815,7 +815,7 @@ ul.munths.wn.showonmobile{
                                 @else
                                     {{$row->type}}
                                 @endif
-                                {{ $row->type }}: 
+                                {{ $row->type }}:
                             </b>
                           (
                             @foreach($row->users as $key=>$suser)
@@ -869,11 +869,11 @@ ul.munths.wn.showonmobile{
                             if(isset($request["country_id"]) && $request["country_id"]){
                                 $url .="&country_id=".$request["country_id"];
                             }
-                            
+
                             if(isset($request["st"]) && $request["st"]){
                                 $url .="&st=".$request["st"];
                             }
-                            
+
                             $nows = \Carbon\Carbon::now();
                             $now = $nows->month;
                             $tnow = $nows->month;
@@ -884,17 +884,17 @@ ul.munths.wn.showonmobile{
                                 $year = $nows->year;
                             }
                                 $cons = 0;
-                                
+
                                 foreach($data as $key=>$ye){
                                     foreach($ye as $key_yes => $yes){
                                         foreach($yes as $key_yes => $swwww){
                                             if($swwww->color == 4){
-                                                $cons ++; 
+                                                $cons ++;
                                             }
-                                        } 
+                                        }
                                     }
                                 }
-                                    
+
                             ?>
                             @if($aush->type == 1)
                                 <span class="caldn" data-toggle="modal" data-target="#exampleModal"><b>{{$tod1}}</b><small>{{$tod2}}</small><i class="far fa-calendar"></i></span>
@@ -904,23 +904,23 @@ ul.munths.wn.showonmobile{
                                     <button class="caldn2"><b>Now</b><small>{{$cons}}</small><i class="far fa-calendar" aria-hidden="true"></i></button>
                                 </form>
                                 @endif
-                                
+
                                 @if(auth()->user()->type == 1 && @$request["d_user"] == null && ( @$request["from_date"] == null || @$request["to_date"] == null))
                                     <ul class="munths wn showonmobile">
-                                        <?php 
+                                        <?php
                                             $url2 = Route('panel.movement.view')."?";
                                             if(isset($request["d_user"]) && $request["d_user"]){
                                                 $url2 .="&d_user=".$request["d_user"];
                                             }
-                
+
                                             if(isset($request["type"]) && $request["type"]){
                                                 $url2 .="&type=".$request["type"];
                                             }
-                
+
                                             if(isset($request["m_type"]) && $request["m_type"]){
                                                 $url2 .="&m_type=".$request["m_type"];
                                             }
-                
+
                                             if(isset($request["country_id"]) && $request["country_id"]){
                                                 $url2 .="&country_id=".$request["country_id"];
                                             }
@@ -938,7 +938,39 @@ ul.munths.wn.showonmobile{
                                 @endif
                             @endif
                             <ul class="munths">
-                                <?php 
+                                <?php
+                                    $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , ['2024-11-01','2024-01-30']);
+                                    if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
+                                        $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
+                                            $query->where("id" , $request["d_user"]);
+                                        });
+                                    }elseif(isset($ispartner) && $ispartner->id == 5){
+                                        $its = $its->where("user_id",$ispartner->id);
+                                    }
+                                    $its = $its->get()->Count();
+
+                                    if($tnow == "11"){
+                                        $its = 0;
+                                    }
+                                ?>
+                                <li><a href="{{$url.'&from_date=2024-11-01&to_date=2024-11-30'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{$now == 11 ? "selected" : "" }}'>11</a></li>
+                                <?php
+                                    $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , ['2024-12-01','2024-12-31']);
+                                    if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
+                                        $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
+                                            $query->where("id" , $request["d_user"]);
+                                        });
+                                    }elseif(isset($ispartner) && $ispartner->id == 5){
+                                        $its = $its->where("user_id",$ispartner->id);
+                                    }
+                                    $its = $its->get()->Count();
+
+                                    if($tnow == "12"){
+                                        $its = 0;
+                                    }
+                                ?>
+                                <li><a href="{{$url.'&from_date=2024-12-01&to_date=2024-12-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{$now == 12 ? "selected" : "" }}'>12</a></li>
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-01-01',$year.'-01-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -948,13 +980,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "01"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-01-01&to_date='.$year.'-01-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{$now == 1 ? "selected" : "" }}'>01</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-02-01',$year.'-02-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -964,13 +996,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "02"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-02-01&to_date='.$year.'-02-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 2 ? "selected" : "" }}'>02</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-03-01',$year.'-03-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -980,13 +1012,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "03"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-03-01&to_date='.$year.'-03-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 3 ? "selected" : "" }}'>03</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-04-01',$year.'-04-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -996,13 +1028,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "04"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-04-01&to_date='.$year.'-04-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 4 ? "selected" : "" }}'>04</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-05-01',$year.'-05-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1012,13 +1044,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "05"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-05-01&to_date='.$year.'-05-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 5 ? "selected" : "" }}'>05</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-06-01',$year.'-06-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1028,13 +1060,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "06"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-06-01&to_date='.$year.'-06-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 6 ? "selected" : "" }}'>06</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-07-01',$year.'-07-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1044,13 +1076,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "07"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-07-01&to_date='.$year.'-07-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 7 ? "selected" : "" }}'>07</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-08-01',$year.'-08-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1065,7 +1097,7 @@ ul.munths.wn.showonmobile{
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-08-01&to_date='.$year.'-08-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 8 ? "selected" : "" }}'>08</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-09-01',$year.'-09-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1080,7 +1112,7 @@ ul.munths.wn.showonmobile{
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-09-01&to_date='.$year.'-09-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 9 ? "selected" : "" }}'>09</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-10-01',$year.'-10-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1090,13 +1122,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "10"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-10-01&to_date='.$year.'-10-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 10 ? "selected" : "" }}'>10</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-11-01',$year.'-11-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1106,13 +1138,13 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "11"){
                                         $its = 0;
                                     }
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-11-01&to_date='.$year.'-11-31'}}" class='{{  $its >= 1 ? "datecolor":"" }} {{$now == 11 ? "selected" : "" }}'>11</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Movement::where("completed","0")->whereBetween("date" , [$year.'-12-01',$year.'-12-31']);
                                     if(isset($request["d_user"]) && $request["d_user"] && isset($ispartner) && $ispartner->type != 1){
                                         $its = $its->wherehas("users" , function (Illuminate\Database\Eloquent\Builder $query) use($request){
@@ -1122,7 +1154,7 @@ ul.munths.wn.showonmobile{
                                         $its = $its->where("user_id",$ispartner->id);
                                     }
                                     $its = $its->get()->Count();
-                                    
+
                                     if($tnow == "12"){
                                         $its = 0;
                                     }
@@ -1292,8 +1324,8 @@ ul.munths.wn.showonmobile{
                                          , {{ $ispartner->full_name }}{{ (($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) && $ispartner->id != 25 ) == true ? ": " : ( $ispartner->id == 25 && $ispartner->blance_tlgn != 0 ? ": ":"") }}
                                          <!--{{ ($t1 != 0 || $t2 != 0 || $t3 != 0 || @$ispartner->blance != 0 || $ispartner->blance_usd != 0) == true ? ": " : "" }}-->
                                         @endif
-    
-    
+
+
                                         <!--@if($ispartner->type == 3)-->
                                         <!--<span>-->
                                         <!-- {{ $ispartner->blance < 0 ? "-" : "" }}-->
@@ -1315,9 +1347,9 @@ ul.munths.wn.showonmobile{
                                         <!--    </form>-->
                                         <!--    @endif-->
                                         <!--@endif-->
-    
+
                                         @if(($ispartner->type == 2 || $ispartner->type == 4 || $ispartner->type == 3 || $ispartner->type == 5) && ($ispartner->id != 25 && $ispartner->id != 27 && $ispartner->id != 34))
-                                            <span> 
+                                            <span>
                                             {{ $ispartner->s_usd == null || $ispartner->s_usd == 0 ? "" : " $ ".$ispartner->s_usd}}
                                             {{ $ispartner->s_usd != 0 && $ispartner->s_p != 0 ? " & " : "" }}
                                             {{ $ispartner->s_p == null || $ispartner->s_p == 0 ? "" : " £ ".$ispartner->s_p}}
@@ -1344,7 +1376,7 @@ ul.munths.wn.showonmobile{
                                                 @endif
                                             @endif
                                         @endif
-                                        
+
                                         @if($ispartner->id == 25)
                                             <span>
                                             {{ $ispartner->blance_tlgn != 0 ? " TL " . $ispartner->blance_tlgn : "" }}
@@ -1365,7 +1397,7 @@ ul.munths.wn.showonmobile{
                                             </form>
                                             @endif
                                         @endif
-                                        
+
                                         @if($ispartner->id == 27 || $ispartner->id == 34)
                                             <span>
                                             {{ $ispartner->blance_usd != 0 ? " $" . $ispartner->blance_usd : "" }}
@@ -1385,20 +1417,20 @@ ul.munths.wn.showonmobile{
                             <div>
                                 @if(auth()->user()->type == 1  && @$request["d_user"] == null && ( @$request["from_date"] == null || @$request["to_date"] == null))
                                 <ul class="munths wn">
-                                    <?php 
+                                    <?php
                                         $url2 = Route('panel.movement.view')."?";
                                         if(isset($request["d_user"]) && $request["d_user"]){
                                             $url2 .="&d_user=".$request["d_user"];
                                         }
-            
+
                                         if(isset($request["type"]) && $request["type"]){
                                             $url2 .="&type=".$request["type"];
                                         }
-            
+
                                         if(isset($request["m_type"]) && $request["m_type"]){
                                             $url2 .="&m_type=".$request["m_type"];
                                         }
-            
+
                                         if(isset($request["country_id"]) && $request["country_id"]){
                                             $url2 .="&country_id=".$request["country_id"];
                                         }
@@ -1418,7 +1450,7 @@ ul.munths.wn.showonmobile{
                         </div>
                     </div>
                     <!-- <div class="table-responsive p-0"> -->
-                    
+
                     @foreach($data as $key=>$ye)
                         @foreach($ye as $key_yes => $yes)
                             <?php
@@ -1450,7 +1482,7 @@ ul.munths.wn.showonmobile{
                                         </th>
                                     </tr>
                                 </thead>
-                            </table>    
+                            </table>
                             <table class="table forprint align-items-center mb-2">
                                 <thead>
                                     @include('panel.Movement.headertable')
@@ -1479,12 +1511,12 @@ ul.munths.wn.showonmobile{
                                     @include('panel.Movement.table2')
                                 </tbody>
                             </table>
-                             
+
                             <!-- </div> -->
 
                             @if(isset($ispartner))
                                 @if($ispartner->id == 5 || $ispartner->type == 3 || $ispartner->type == 5 || $ispartner->type == 1)
-                                
+
                                 @else
                                     @if($ispartner->id == 25)
                                     @include('panel.Movement.price')
@@ -1493,7 +1525,7 @@ ul.munths.wn.showonmobile{
                                     @endif
                                 @endif
                             @endif
-                            
+
                             @if(isset($ispartner) && $ispartner->type == 5)
                                 @include('panel.Movement.nets')
                             @endif
@@ -1522,9 +1554,9 @@ ul.munths.wn.showonmobile{
 
                         @endforeach
                     @endforeach
-                    
-                    
-                    
+
+
+
                     @if(isset($ispartner) && $ispartner->type == 5)
                         @foreach($ahlandatas as $key=>$ye)
                             @foreach($ye as $key_yes => $yes)
@@ -1567,7 +1599,7 @@ ul.munths.wn.showonmobile{
                                             @endif
                                         @endforeach
                                     </tbody>
-                                    
+
                                     <?php $is_partner = false; ?>
                                 </table>
                                 @include('panel.Movement.ProfitParnter')
@@ -1575,15 +1607,15 @@ ul.munths.wn.showonmobile{
                             @endforeach
                         @endforeach
                     @endif
-                    
+
                     @if(isset($ispartner) && ($ispartner->type == 3 || $ispartner->type == 5))
                         @include('panel.Movement.transactionssum')
-                        
+
                         @if(sizeof($moves_data) > 0 && $ispartner->type != 5)
-                        
+
                         @endif
                     @endif
-                    
+
                     @if(isset($ispartner))
                     <?php $conI = 1; ?>
                     <?php $conE = 1; ?>
@@ -1599,7 +1631,7 @@ ul.munths.wn.showonmobile{
                     @if($conI != 1)
                         @include('panel.Movement.transaction')
                     @endif
-                    
+
                     @if($conE != 1)
                         @include('panel.Movement.Expinstransaction')
                     @endif
@@ -1608,7 +1640,7 @@ ul.munths.wn.showonmobile{
             </div>
         </div>
     </div>
-    
+
   @section('panel_js')
     <script>
         $( document ).ready(function() {
