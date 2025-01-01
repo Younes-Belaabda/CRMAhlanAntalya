@@ -4,7 +4,7 @@
     @push('panel_css')
     @endpush
     <style>
-    
+
 table.table tbody td p.datecolor{
     color:red !important;
 }
@@ -29,20 +29,20 @@ table.table tbody td p.datecolor{
 </h5>
                         </div>
                         <div>
-                            <?php 
+                            <?php
                             $url = Route('panel.payments.view')."?";
                             if(isset($request["name"]) && $request["name"]){
                                 $url .="&name=".$request["name"];
                             }
-                            
+
                             if(isset($request["amount"]) && $request["amount"]){
                                 $url .="&amount=".$request["amount"];
                             }
-                            
+
                             if(isset($request["date"]) && $request["date"]){
                                 $url .="&date=".$request["date"];
                             }
-                            
+
                             $nows = \Carbon\Carbon::now();
                             $now = $nows->month;
                             $year = $nows->year;
@@ -53,6 +53,9 @@ table.table tbody td p.datecolor{
                             }
                             ?>
                             <ul class="munths">
+                                <li><a href="{{$url.'&from_date=2024-11-01&to_date=2024-11-30'}}" class='{{ $now == 11 ? "selected" : "" }}'>11</a></li>
+                                <li><a href="{{$url.'&from_date=2024-12-01&to_date=2024-12-31'}}" class='{{ $now == 12 ? "selected" : "" }}'>12</a></li>
+
                                 <li><a href="{{$url.'&from_date='.$year.'-01-01&to_date='.$year.'-01-31'}}" class='{{ $now == 1 ? "selected" : "" }}'>01</a></li>
                                 <li><a href="{{$url.'&from_date='.$year.'-02-01&to_date='.$year.'-02-31'}}" class='{{ $now == 2 ? "selected" : "" }}'>02</a></li>
                                 <li><a href="{{$url.'&from_date='.$year.'-03-01&to_date='.$year.'-03-31'}}" class='{{ $now == 3 ? "selected" : "" }}'>03</a></li>

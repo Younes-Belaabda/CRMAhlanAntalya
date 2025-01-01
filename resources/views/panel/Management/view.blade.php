@@ -13,32 +13,32 @@
                             <h5 class="mb-1">All Accounts</h5>
                         </div>
                         <div>
-                            <?php 
+                            <?php
                             $url = Route('panel.users.view')."?";
                             if(isset($request["d_user"]) && $request["d_user"]){
                                 $url .="&d_user=".$request["d_user"];
                             }
-                            
+
                             if(isset($request["m_type"]) && $request["m_type"]){
                                 $url .="&m_type=".$request["m_type"];
                             }
-                            
+
                             if(isset($request["from_date"]) && $request["from_date"]){
                                 $url .="&from_date=".$request["from_date"];
                             }
-                            
+
                             if(isset($request["to_date"]) && $request["to_date"]){
                                 $url .="&to_date=".$request["to_date"];
                             }
-                            
+
                             if(isset($request["country_id"]) && $request["country_id"]){
                                 $url .="&country_id=".$request["country_id"];
                             }
-                            
+
                             ?>
                             <ul class="munths">
                                 @foreach($user_type as $keys=>$ut)
-                                <?php 
+                                <?php
                                     $cons = $data->where("type",$keys+1)->count();
                                 ?>
                                 <li><a href="{{$url.'&type='.$keys+1}}" class='{{ @$request["type"] == $keys+1 ? "selected" : "" }}'>{{$ut . " " . $cons }}</a></li>
@@ -107,7 +107,7 @@
                                         <td class="text-center">
                                             <p class="text-xs font-weight-bold mb-0">{{ $row->email }}</p>
                                         </td>
-                                        
+
                                         @if($typew == "Agent")
                                         <td class="text-center">
                                             <p class="text-xs font-weight-bold mb-0">$ {{$row->blance}}</p>

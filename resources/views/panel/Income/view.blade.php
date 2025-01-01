@@ -69,20 +69,20 @@ p.red {
                             <h5 class="mb-1 show_accro">Filter</h5>
                         </div>
                         <div>
-                            <?php 
+                            <?php
                             $url = Route('panel.cash.view')."?";
                             if(isset($request["d_user"]) && $request["d_user"]){
                                 $url .="&d_user=".$request["d_user"];
                             }
-                            
+
                             if(isset($request["type"]) && $request["type"]){
                                 $url .="&type=".$request["type"];
                             }
-                            
+
                             if(isset($request["m_type"]) && $request["m_type"]){
                                 $url .="&m_type=".$request["m_type"];
                             }
-                            
+
                             if(isset($request["country_id"]) && $request["country_id"]){
                                 $url .="&country_id=".$request["country_id"];
                             }
@@ -98,51 +98,60 @@ p.red {
                             ?>
                             <span class="showaccout"><i class="fa fa-plus"></i></span>
                             <ul class="munths">
-                                <?php 
+                                <?php
+                                    $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , ['2024-11-01','2024-11-30'])->get()->Count();
+                                ?>
+                                <li><a href="{{$url.'&from_date=2024-11-01&to_date=2024-11-30'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 11 ? "selected" : "" }}'>11</a></li>
+                                <?php
+                                    $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , ['2024-12-01','2024-12-31'])->get()->Count();
+                                ?>
+                                <li><a href="{{$url.'&from_date=2024-12-01&to_date=2024-12-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 12 ? "selected" : "" }}'>12</a></li>
+
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-01-01',$year.'-01-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-01-01&to_date='.$year.'-01-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 1 ? "selected" : "" }}'>01</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-02-01',$year.'-02-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-02-01&to_date='.$year.'-02-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 2 ? "selected" : "" }}'>02</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-03-01',$year.'-03-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-03-01&to_date='.$year.'-03-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 3 ? "selected" : "" }}'>03</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-04-01',$year.'-04-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-04-01&to_date='.$year.'-04-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 4 ? "selected" : "" }}'>04</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-05-01',$year.'-05-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-05-01&to_date='.$year.'-05-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 5 ? "selected" : "" }}'>05</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-06-01',$year.'-06-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-06-01&to_date='.$year.'-06-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 6 ? "selected" : "" }}'>06</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-07-01',$year.'-07-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-07-01&to_date='.$year.'-07-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 7 ? "selected" : "" }}'>07</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-08-01',$year.'-08-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-08-01&to_date='.$year.'-08-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 8 ? "selected" : "" }}'>08</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-09-01',$year.'-09-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-09-01&to_date='.$year.'-09-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 9 ? "selected" : "" }}'>09</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-10-01',$year.'-10-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-10-01&to_date='.$year.'-10-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 10 ? "selected" : "" }}'>10</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-11-01',$year.'-11-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-11-01&to_date='.$year.'-11-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 11 ? "selected" : "" }}'>11</a></li>
-                                <?php 
+                                <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-12-01',$year.'-12-31'])->get()->Count();
                                 ?>
                                 <li><a href="{{$url.'&from_date='.$year.'-12-01&to_date='.$year.'-12-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 12 ? "selected" : "" }}'>12</a></li>
@@ -227,7 +236,7 @@ p.red {
                          //else{
                             return $collection->where('price_type', $currency)->where("new_date" , $new_date)
                             ->where("type" , $type)->sum('price');
-                            
+
                         //}
                     }
                     function SumByType($collection, $colum,$Sum)
@@ -346,7 +355,7 @@ p.red {
                                                     </a>
                                                     @else
                                                     <p class="text-xs font-weight-bold mb-0 {{  $row->movement_id == null ? ( $row->for_id != null ? "" : ($type == 'Income' ? 'gren' : 'red')) : ''}}">{{$row->note == null ? $type . ($type == "Income" ? " From " : " to ").@$row->for_user->full_name : $row->note}}</p>
-                                                    @endif                                                
+                                                    @endif
                                                 </td>
                                                 @if(SumByType($data_e,"$","price") != 0)
                                                 <td class="incs">
@@ -433,32 +442,32 @@ p.red {
                                             $m2=0;
                                             $m3=0;
                                             $m4=0;
-                                            
+
                                             $i1=sumAmountByCurrency($data_e,$year->new_date,"Income", '$');
                                             $i2=sumAmountByCurrency($data_e,$year->new_date,"Income", 'TL');
                                             $i3=sumAmountByCurrency($data_e,$year->new_date,"Income", '€');
                                             $i4=sumAmountByCurrency($data_e,$year->new_date,"Income", '£');
-                                            
+
                                             $m1=sumMAmountByCurrency($movement,$year->new_date,"$");
                                             $m2=sumMAmountByCurrency($movement,$year->new_date,"TL");
                                             $m3=sumMAmountByCurrency($movement,$year->new_date,"€");
                                             $m4=sumMAmountByCurrency($movement,$year->new_date,"£");
-                                            
+
                                             $c1 = sumMCAmountByCurrency($movement,$year->new_date,"$");
                                             $c2 = sumMCAmountByCurrency($movement,$year->new_date,"TL");
                                             $c3 = sumMCAmountByCurrency($movement,$year->new_date,"€");
                                             $c4 = sumMCAmountByCurrency($movement,$year->new_date,"£");
-                                            
+
                                             $e01 = sumMTAmountByCurrency($movement,$year->new_date, '$');
                                             $e02 = sumMTAmountByCurrency($movement,$year->new_date, 'TL');
                                             $e03 = sumMTAmountByCurrency($movement,$year->new_date, '€');
                                             $e04 = sumMTAmountByCurrency($movement,$year->new_date, '£');
-                                            
+
                                             $e1 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '$');
                                             $e2 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", 'TL');
                                             $e3 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '€');
                                             $e4 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '£');
-                                            
+
                                             $rows= 1;
                                             if($i1 != 0 || $m1 != 0 || $c1 != 0 || $e01 != 0 || $e1 != 0){
                                                 $rows ++ ;
@@ -473,7 +482,7 @@ p.red {
                                                 $rows ++ ;
                                             }
                                         ?>
-                                        
+
                                         <table class="table align-items-center mb-0 th_{{$rows}} nopadhids head_table">
                                             <thead>
                                                 <tr class="bg"><th  colspan="10">Entries PROFIT Display</th></tr>
@@ -587,32 +596,32 @@ p.red {
                                             $m2=0;
                                             $m3=0;
                                             $m4=0;
-                                            
+
                                             $i1=sumAmountByCurrency($data_e,$year->new_date,"Income", '$');
                                             $i2=sumAmountByCurrency($data_e,$year->new_date,"Income", 'TL');
                                             $i3=sumAmountByCurrency($data_e,$year->new_date,"Income", '€');
                                             $i4=sumAmountByCurrency($data_e,$year->new_date,"Income", '£');
-                                            
+
                                             $m1=sumMAmountByCurrency($movement,$year->new_date,"$");
                                             $m2=sumMAmountByCurrency($movement,$year->new_date,"TL");
                                             $m3=sumMAmountByCurrency($movement,$year->new_date,"€");
                                             $m4=sumMAmountByCurrency($movement,$year->new_date,"£");
-                                            
+
                                             $c1 = sumMCAmountByCurrency($movement,$year->new_date,"$");
                                             $c2 = sumMCAmountByCurrency($movement,$year->new_date,"TL");
                                             $c3 = sumMCAmountByCurrency($movement,$year->new_date,"€");
                                             $c4 = sumMCAmountByCurrency($movement,$year->new_date,"£");
-                                            
+
                                             $e01 = sumMTAmountByCurrency($movement,$year->new_date, '$');
                                             $e02 = sumMTAmountByCurrency($movement,$year->new_date, 'TL');
                                             $e03 = sumMTAmountByCurrency($movement,$year->new_date, '€');
                                             $e04 = sumMTAmountByCurrency($movement,$year->new_date, '£');
-                                            
+
                                             $e1 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '$');
                                             $e2 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", 'TL');
                                             $e3 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '€');
                                             $e4 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '£');
-                                            
+
                                             $rows= 1;
                                             if($i1 != 0 || $m1 != 0 || $c1 != 0 || $e01 != 0 || $e1 != 0){
                                                 $rows ++ ;
@@ -627,7 +636,7 @@ p.red {
                                                 $rows ++ ;
                                             }
                                         ?>
-                                        
+
                                         <table class="table align-items-center mb-0 th_{{$rows}} nopadhids head_table">
                                             <thead>
                                                 <tr class="bg"><th  colspan="10">Final PRofit</th></tr>

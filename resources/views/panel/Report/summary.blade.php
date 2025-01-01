@@ -3,8 +3,8 @@
 @section('content')
     @push('panel_css')
     @endpush
-    <?php 
-        
+    <?php
+
         function Sums($collection,$data, $type ,$currency)
         {
             $start_ = date("Y-m",strtotime($data))."-01";
@@ -49,20 +49,20 @@
                             <h5 class="mb-1 show_accro">Summary</h5>
                         </div>
                         <div>
-                            <?php 
+                            <?php
                             $url = Route('panel.report.summary')."?";
                             if(isset($request["d_user"]) && $request["d_user"]){
                                 $url .="&d_user=".$request["d_user"];
                             }
-                            
+
                             if(isset($request["type"]) && $request["type"]){
                                 $url .="&type=".$request["type"];
                             }
-                            
+
                             if(isset($request["m_type"]) && $request["m_type"]){
                                 $url .="&m_type=".$request["m_type"];
                             }
-                            
+
                             if(isset($request["country_id"]) && $request["country_id"]){
                                 $url .="&country_id=".$request["country_id"];
                             }
@@ -76,6 +76,8 @@
                             }
                             ?>
                             <ul class="munths">
+                                <li><a href="{{$url.'&from_date=2024-11-01&to_date=2024-11-30'}}" class='{{ $now == 11 ? "selected" : "" }}'>11</a></li>
+                                <li><a href="{{$url.'&from_date=2024-12-01&to_date=2024-12-31'}}" class='{{ $now == 12 ? "selected" : "" }}'>12</a></li>
                                 <li><a href="{{$url.'&from_date='.$year.'-01-01&to_date='.$year.'-01-31'}}" class='{{ $now == 1 ? "selected" : "" }}'>01</a></li>
                                 <li><a href="{{$url.'&from_date='.$year.'-02-01&to_date='.$year.'-02-31'}}" class='{{ $now == 2 ? "selected" : "" }}'>02</a></li>
                                 <li><a href="{{$url.'&from_date='.$year.'-03-01&to_date='.$year.'-03-31'}}" class='{{ $now == 3 ? "selected" : "" }}'>03</a></li>
@@ -182,33 +184,33 @@
                             <h5 class="mb-1">Summary Report</h5>
                         </div>
                         <div>
-                            <?php 
+                            <?php
                             $url = Route('panel.report.summary')."?";
                             if(isset($request["d_user"]) && $request["d_user"]){
                                 $url .="&d_user=".$request["d_user"];
                             }
-                            
+
                             if(isset($request["m_type"]) && $request["m_type"]){
                                 $url .="&m_type=".$request["m_type"];
                             }
-                            
+
                             if(isset($request["from_date"]) && $request["from_date"]){
                                 $url .="&from_date=".$request["from_date"];
                             }
-                            
+
                             if(isset($request["to_date"]) && $request["to_date"]){
                                 $url .="&to_date=".$request["to_date"];
                             }
-                            
+
                             if(isset($request["country_id"]) && $request["country_id"]){
                                 $url .="&country_id=".$request["country_id"];
                             }
-                            
+
                             ?>
                             <ul class="munths">
                                 @foreach($user_type as $keys=>$ut)
                                 @if($ut != "Admin")
-                                <li><a href="{{$url.'&type='.$keys+1}}" class='{{ @$request["type"] == $keys+1 ? "selected" : "" }}'>{{$ut}}</a></li>
+                                <li><a href="{{$url.'&type='.($keys+1)}}" class='{{ @$request["type"] == $keys+1 ? "selected" : "" }}'>{{$ut}}</a></li>
                                 @endif
                                 @endforeach
                             </ul>
@@ -216,11 +218,11 @@
                         </div>
                     </div>
                 </div>
-                
+
                 <div id="exp_pdf" class="card-body px-2 pt-0 pb-2">
                     <div class="table-responsive p-0">
                         @foreach($data_u as $type)
-                            <?php 
+                            <?php
                                 $show = false;
                                 foreach($data_up as $key => $d_user){
                                     if($d_user->type == $type->type && Counts($d_user->movements ,$date) != 0){
@@ -282,11 +284,11 @@
                                     @foreach($data_up as $key => $d_user)
                                         @if($d_user->type == $type->type && Counts($d_user->movements ,$date) != 0)
                                             <tr>
-                                                <?php 
+                                                <?php
                                                     $sizeo = sizeof($currancy)+1;
                                                 ?>
                                                 @foreach($currancy as $i_cur)
-                                                    <?php 
+                                                    <?php
                                                         $net = Sums($d_user->movements ,$date, "net" , $i_cur);
                                                         $profit = Sums($d_user->movements ,$date, "revenue" , $i_cur);
                                                         $com = Sums($d_user->movements ,$date, "commission" , $i_cur);
@@ -306,7 +308,7 @@
                                                 </td>
                                             </tr>
                                             @foreach($currancy as $i_cur)
-                                                <?php 
+                                                <?php
                                                     $net = Sums($d_user->movements ,$date, "net" , $i_cur);
                                                     $profit = Sums($d_user->movements ,$date, "revenue" , $i_cur);
                                                     $com = Sums($d_user->movements ,$date, "commission" , $i_cur);
