@@ -41,7 +41,7 @@
                                 <?php
                                     $cons = $data->where("type",$keys+1)->count();
                                 ?>
-                                <li><a href="{{$url.'&type='.$keys+1}}" class='{{ @$request["type"] == $keys+1 ? "selected" : "" }}'>{{$ut . " " . $cons }}</a></li>
+                                <li><a href="{{$url.'&type='.($keys+1)}}" class='{{ @$request["type"] == $keys+1 ? "selected" : "" }}'>{{$ut . " " . $cons }}</a></li>
                                 @endforeach
                             </ul>
                             <a href="{{ route('panel.users.add_new') }}" class="btn bg-gradient-dark btn-sm mb-2" type="button">+&nbsp; New Account</a>

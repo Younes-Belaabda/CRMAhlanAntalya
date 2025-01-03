@@ -41,8 +41,8 @@
                     <span class="nav-link-text ms-1">all entries</span>
                 </a>
             </li>
-            @if(Auth()->user()->type == 1 || Auth()->user()->type == 5)
-            <li class="nav-item">
+            {{-- @if(Auth()->user()->type == 1 || Auth()->user()->type == 5) --}}
+            {{-- <li class="nav-item">
                 <a class="nav-link {{ Route::currentRouteName() == 'panel.todolist.view' || Route::currentRouteName() == 'panel.todolist.add_new' || Route::currentRouteName() == 'panel.todolist.add_retweet' ? 'active' : '' }}"
                     href="{{ route('panel.todolist.view') }}">
                     <div
@@ -52,8 +52,8 @@
                     </div>
                     <span class="nav-link-text ms-1">IMPORTANT</span>
                 </a>
-            </li>
-            @endif
+            </li> --}}
+            {{-- @endif --}}
             @if(Auth()->user()->type == 1)
             <li class="nav-item hide-mobile">
                 <a class="nav-link {{ Route::currentRouteName() == 'panel.report.summary' ? 'active' : '' }}"
