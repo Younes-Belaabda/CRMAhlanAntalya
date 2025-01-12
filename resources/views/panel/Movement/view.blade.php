@@ -138,7 +138,6 @@
         return $collection->where('price_type', $currency)->where('new_date', $year)->whereNull('movement_id')->sum('price');
     }
     ?>
-
     <?php
 
     function sumProfitPartners($collection, $type, $currency)
@@ -806,7 +805,6 @@
         }
     </style>
     <?php
-
     $tod1 = date('M', strtotime($cur_today));
     $tod2 = date('d', strtotime($cur_today));
     ?>

@@ -55,7 +55,7 @@
             </li> --}}
             {{-- @endif --}}
             @if(Auth()->user()->type == 1)
-            <li class="nav-item hide-mobile">
+            {{-- <li class="nav-item hide-mobile">
                 <a class="nav-link {{ Route::currentRouteName() == 'panel.report.summary' ? 'active' : '' }}"
                     href="{{ route('panel.report.summary') }}">
                     <div
@@ -65,7 +65,7 @@
                     </div>
                     <span class="nav-link-text ms-1">Summary</span>
                 </a>
-            </li>
+            </li> --}}
             @endif
             @if(Auth()->user()->type == 1)
             <li class="nav-item">

@@ -19,7 +19,7 @@
             <p class="showmobile">COUNTRY</p>
         </th>
         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:240px;padding: 0;">
-            
+
             <p>Service Description</p>
             <p class="showmobile">SAMMARY</p>
         </th>
@@ -35,7 +35,7 @@
         </th>
         @endif
         @endif
-        
+
         @if(isset($aush) && $aush->type == 1)
         <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7 ps-2" style="width:8%;padding: 0 !important;">
             @if(isset($ispartner->type) && $ispartner->type == 5 && isset($is_partner) && $is_partner == true)
@@ -55,11 +55,11 @@
             LEAD BY
         </th>
         @endif
-        
+
         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:70px;padding: 0;">
             Price
         </th>
-        
+
         @if((isset($request["d_user"]) && $request["d_user"] != null))
         @if($aush->type != 3)
         <th class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:80px;padding: 0;">
@@ -87,7 +87,7 @@
             Commission
         </th> -->
         @if($aush->type == 1 || ($aush->type == 5 && @$is_partner == true))
-        <th class="last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:60px;padding: 0;">
+        <th class="hide-on-print last-child text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7" style="width:60px;padding: 0;">
             Action
         </th>
         @endif
