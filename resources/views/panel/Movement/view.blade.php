@@ -1363,7 +1363,7 @@
                                 }
                                 ?>
                                 <h5 class="mb-1">All entries
-                                    ({{ $NowCount }})
+                                    ({{ $NowCount }}{{ isset($ispartner) && $ispartner->type == 5 ? ' & ' . @$NowCount2 : '' }})
                                     @if (isset($ispartner))
                                         @if ($ispartner->type == 5)
                                             , Ahlan Antalya &
@@ -1401,7 +1401,7 @@
                                         @elseif($ispartner->id == 5)
                                             ,
                                             {{ $ispartner->full_name }}{{ ($ispartner->blance_usd != 0 || $ispartner->blance_tl != 0 || $ispartner->blance_e != 0 || $ispartner->blance_p != 0) == true ? ': ' : '' }}
-                                            <span>
+                                            {{-- <span>
                                                 {{ $ispartner->blance_usd == 0 ? '' : " $ " . $ispartner->blance_usd }}
                                                 {{ $ispartner->blance_usd != 0 && $ispartner->blance_tl != 0 ? ' & ' : '' }}
                                                 {{ $ispartner->blance_tl == 0 ? '' : ' TL ' . $ispartner->blance_tl }}
@@ -1409,7 +1409,7 @@
                                                 {{ $ispartner->blance_e == 0 ? '' : ' € ' . $ispartner->blance_e }}
                                                 {{ $ispartner->blance_e != 0 && $ispartner->blance_p != 0 ? ' & ' : '' }}
                                                 {{ $ispartner->blance_p == 0 ? '' : ' £ ' . $ispartner->blance_p }}
-                                            </span>
+                                            </span> --}}
                                         @else
                                             ,
                                             {{ $ispartner->full_name }}{{ (($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) && $ispartner->id != 25) == true ? ': ' : ($ispartner->id == 25 && $ispartner->blance_tlgn != 0 ? ': ' : '') }}
