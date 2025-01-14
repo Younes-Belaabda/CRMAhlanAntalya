@@ -1363,7 +1363,7 @@
                                 }
                                 ?>
                                 <h5 class="mb-1">All entries
-                                    ({{ $NowCount }}{{ /*isset($ispartner) && $ispartner->type == 5 ? ' & ' . @$NowCount2 : ''*/ }})
+                                    ({{ $NowCount }})
                                     @if (isset($ispartner))
                                         @if ($ispartner->type == 5)
                                             , Ahlan Antalya &
