@@ -1401,7 +1401,7 @@
                                         @elseif($ispartner->id == 5)
                                             ,
                                             {{ $ispartner->full_name }}{{ ($ispartner->blance_usd != 0 || $ispartner->blance_tl != 0 || $ispartner->blance_e != 0 || $ispartner->blance_p != 0) == true ? ': ' : '' }}
-                                            {{-- <span>
+                                            <span>
                                                 {{ $ispartner->blance_usd == 0 ? '' : " $ " . $ispartner->blance_usd }}
                                                 {{ $ispartner->blance_usd != 0 && $ispartner->blance_tl != 0 ? ' & ' : '' }}
                                                 {{ $ispartner->blance_tl == 0 ? '' : ' TL ' . $ispartner->blance_tl }}
@@ -1409,7 +1409,7 @@
                                                 {{ $ispartner->blance_e == 0 ? '' : ' € ' . $ispartner->blance_e }}
                                                 {{ $ispartner->blance_e != 0 && $ispartner->blance_p != 0 ? ' & ' : '' }}
                                                 {{ $ispartner->blance_p == 0 ? '' : ' £ ' . $ispartner->blance_p }}
-                                            </span> --}}
+                                            </span>
                                         @else
                                             ,
                                             {{ $ispartner->full_name }}{{ (($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) && $ispartner->id != 25) == true ? ': ' : ($ispartner->id == 25 && $ispartner->blance_tlgn != 0 ? ': ' : '') }}
@@ -1445,13 +1445,13 @@
                                             ($ispartner->type == 2 || $ispartner->type == 4 || $ispartner->type == 3 || $ispartner->type == 5) &&
                                                 ($ispartner->id != 25 && $ispartner->id != 27 && $ispartner->id != 34))
                                             <span>
-                                                {{ $ispartner->s_usd == null || $ispartner->s_usd == 0 ? '' : " $ " . $ispartner->s_usd }}
+                                                {{-- {{ $ispartner->s_usd == null || $ispartner->s_usd == 0 ? '' : " $ " . $ispartner->s_usd }}
                                                 {{ $ispartner->s_usd != 0 && $ispartner->s_p != 0 ? ' & ' : '' }}
                                                 {{ $ispartner->s_p == null || $ispartner->s_p == 0 ? '' : ' £ ' . $ispartner->s_p }}
                                                 {{ ($ispartner->s_usd != 0 || $ispartner->s_p != 0) && $ispartner->s_e != 0 ? ' & ' : '' }}
                                                 {{ $ispartner->s_e == null || $ispartner->s_e == 0 ? '' : ' € ' . $ispartner->s_e }}
                                                 {{ ($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0) && $ispartner->s_tl != 0 ? ' & ' : '' }}
-                                                {{ $ispartner->s_tl == null || $ispartner->s_tl == 0 ? '' : ' TL ' . $ispartner->s_tl }}
+                                                {{ $ispartner->s_tl == null || $ispartner->s_tl == 0 ? '' : ' TL ' . $ispartner->s_tl }} --}}
                                             </span>
                                             @if ($aush->type == 1)
                                                 @if (
@@ -1488,9 +1488,9 @@
                                         @endif
 
                                         @if ($ispartner->id == 25)
-                                            <span>
+                                            {{-- <span>
                                                 {{ $ispartner->blance_tlgn != 0 ? ' TL ' . $ispartner->blance_tlgn : '' }}
-                                            </span>
+                                            </span> --}}
                                             @if ($aush->type == 1 && $ispartner->blance_tlgn != 0)
                                                 <div class="checkbox sus"
                                                     style="margin-top: 4px;float: right;width: auto;">
