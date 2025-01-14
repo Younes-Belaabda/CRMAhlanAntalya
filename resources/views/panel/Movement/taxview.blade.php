@@ -535,10 +535,10 @@ ul.munths {
                                         {{ $ispartner->blance_p == 0 ? "" : " £ ". $ispartner->blance_p}}
 
                                         @if($ispartner->blance_usd != 0 || $ispartner->blance_tl != 0 || $ispartner->blance_e != 0 || $ispartner->blance_p != 0)
-                                        {{-- <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
+                                        <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
                                             <input name="paids" type="checkbox" placeholder="paids" id="paids" value="1">
                                             <label for="paids"> , {{ __('Paid Done') }}</label>
-                                        </div> --}}
+                                        </div>
                                         <form id="form_paids" action="{{ Route('panel.movement.paid') }}" method="post" role="form text-left" style="display:none;float: right;margin-top: -2px;margin-left: 5px;">
                                             @csrf
                                             <input type="hidden" name="from_date" value="{{ @$request['from_date'] }}" />
@@ -574,10 +574,10 @@ ul.munths {
                                         {{ $t2 == null || $t2 == 0 ? "" : "& TL ".$t2}}
                                         {{ $t3 == null || $t3 == 0 ? "" : "& € ".$t3}}
                                         @if($t1 != 0 || $t2 != 0 || $t3 != 0)
-                                        {{-- <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
+                                        <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
                                             <input name="paids" type="checkbox" placeholder="paids" id="paids" value="1">
                                             <label for="paids"> , {{ __('Paid Done') }}</label>
-                                        </div> --}}
+                                        </div>
                                         <form id="form_paids" action="{{ Route('panel.movement.paid') }}" method="post" role="form text-left" style="display:none;float: right;margin-top: -2px;margin-left: 5px;">
                                             @csrf
                                             <input type="hidden" name="from_date" value="{{ @$request['from_date'] }}" />
