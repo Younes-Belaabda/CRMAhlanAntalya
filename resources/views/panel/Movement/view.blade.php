@@ -1519,12 +1519,12 @@
                                         @endif
 
                                         @if ($ispartner->id == 27 || $ispartner->id == 34)
-                                            <span>
+                                            {{-- <span>
                                                 {{ $ispartner->blance_usd != 0 ? " $" . $ispartner->blance_usd : '' }}
                                                 {{ $ispartner->blance_p != 0 ? '& £' . $ispartner->blance_p : '' }}
                                                 {{ $ispartner->blance_e != 0 ? '& €' . $ispartner->blance_e : '' }}
                                                 {{ $ispartner->blance_tl != 0 ? '& TL' . $ispartner->blance_tl : '' }}
-                                            </span>
+                                            </span> --}}
                                             , Maher<span>{{ $ispartner->Mblance_usd != 0 ? ": $" . $ispartner->Mblance_usd : '' }}
                                                 {{ $ispartner->Mblance_p != 0 ? '& £' . $ispartner->Mblance_p : '' }}
                                                 {{ $ispartner->Mblance_e != 0 ? '& €' . $ispartner->Mblance_e : '' }}
