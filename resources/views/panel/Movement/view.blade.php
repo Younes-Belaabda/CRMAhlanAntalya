@@ -1459,13 +1459,13 @@
                                                         $ispartner->s_p != 0 ||
                                                         $ispartner->s_e != 0 ||
                                                         $ispartner->s_tl != 0)
-                                                    <div class="checkbox sus"
+                                                    {{-- <div class="checkbox sus"
                                                         style="margin-top: 0;width: auto;display: inline-block;float: none;margin-bottom: -11px;margin-right:10px;">
                                                         <input name="paids" type="checkbox" placeholder="paids"
                                                             id="paids" value="1">
                                                         <label for="paids"> <span>,</span>
                                                             {{ __('Paid Done') }}</label>
-                                                    </div>
+                                                    </div> --}}
                                                     <form id="form_paids" action="{{ Route('panel.movement.paid') }}"
                                                         method="post" role="form text-left"
                                                         style="display:none;float: right;margin-top: -2px;margin-left: 5px;">
@@ -1492,12 +1492,12 @@
                                                 {{ $ispartner->blance_tlgn != 0 ? ' TL ' . $ispartner->blance_tlgn : '' }}
                                             </span>
                                             @if ($aush->type == 1 && $ispartner->blance_tlgn != 0)
-                                                <div class="checkbox sus"
+                                                {{-- <div class="checkbox sus"
                                                     style="margin-top: 4px;float: right;width: auto;">
                                                     <input name="paids" type="checkbox" placeholder="paids"
                                                         id="paids" value="1">
                                                     <label for="paids"> <span>,</span> {{ __('Paid Done') }}</label>
-                                                </div>
+                                                </div> --}}
                                                 <form id="form_paids" action="{{ Route('panel.movement.paid') }}"
                                                     method="post" role="form text-left"
                                                     style="display:none;float: right;margin-top: -2px;margin-left: 5px;">

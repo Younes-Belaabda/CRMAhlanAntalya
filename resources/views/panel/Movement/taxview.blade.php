@@ -113,11 +113,11 @@
                 $sum =  ($collection->where("paybyus" , "0")->sum("revenue_partner")) - $sum0;
             }else{
                 $collection = $collection->wherein("user_id",[1,2,3,4,5]);
-                
+
                 $sum = $collection->where("paybyus" , "0")->sum("revenue") +
                         $collection->where("paybyus" , "0")->sum("admin_partner") +
                         $collection->where("paybyus" , "0")->sum("revenue_partner");
-                        
+
                 $sum = $sum - $collection->where("paybyus" , "1")->sum("net");
             }
             return $sum;
@@ -136,7 +136,7 @@
         }
         function sumAmountByCurrencyAllsNets($collection,$type, $currency)
         {
-            
+
             $net = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
             if($currency == "TL"){
                 $net1 = $collection->where('price_type', $currency)->where("paybyus" , "1")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
@@ -244,7 +244,7 @@
         }
         function sumAmountByCurrencyAll($collection,$type, $currency)
         {
-            return $collection->where('price_type', $currency)->where("status",1)->sum("revenue") 
+            return $collection->where('price_type', $currency)->where("status",1)->sum("revenue")
                     + $collection->where('commission_type', $currency)->where("status",1)->sum("commission");
         }
         function sumProfitPartnerAll($collection,$type, $currency)
@@ -265,7 +265,7 @@
             $sum = $collection->where("type" , $type)->where("status",1)->where('price_type', $currency)->sum('revenue');
             return $sum == 0 ? null : $sum;
         }
-        
+
         function AdminsumAmountByCurrencyAll($collection,$type, $currency)
         {
             return $collection->where('price_type', $currency)->where("status",1)->sum("admin_partner") + $collection->where('admin_commission_type', $currency)->where("status",1)->sum("admin_commission");
@@ -280,7 +280,7 @@
             $sum = $collection->where("type" , $type)->where("status",1)->where('price_type', $currency)->sum('admin_partner');
             return $sum == 0 ? null : $sum;
         }
-        
+
 
         function CountofTypeAdminAC($collection,$type, $currency)
         {
@@ -533,12 +533,12 @@ ul.munths {
                                         {{ $ispartner->blance_e == 0 ? "" : " € ". $ispartner->blance_e}}
                                         {{ $ispartner->blance_e != 0 && $ispartner->blance_p != 0   ? " & " : "" }}
                                         {{ $ispartner->blance_p == 0 ? "" : " £ ". $ispartner->blance_p}}
-                                        
+
                                         @if($ispartner->blance_usd != 0 || $ispartner->blance_tl != 0 || $ispartner->blance_e != 0 || $ispartner->blance_p != 0)
-                                        <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
+                                        {{-- <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
                                             <input name="paids" type="checkbox" placeholder="paids" id="paids" value="1">
                                             <label for="paids"> , {{ __('Paid Done') }}</label>
-                                        </div>
+                                        </div> --}}
                                         <form id="form_paids" action="{{ Route('panel.movement.paid') }}" method="post" role="form text-left" style="display:none;float: right;margin-top: -2px;margin-left: 5px;">
                                             @csrf
                                             <input type="hidden" name="from_date" value="{{ @$request['from_date'] }}" />
@@ -565,7 +565,7 @@ ul.munths {
 
 
                                     @if($ispartner->type == 3)
-                                     {{ $ispartner->blance < 0 ? "-" : "" }} 
+                                     {{ $ispartner->blance < 0 ? "-" : "" }}
                                      {{ $ispartner->blance != 0 ? "$" .$ispartner->blance < 0 ? abs($ispartner->blance) : "$" . $ispartner->blance : "" }}
                                     @endif
 
@@ -574,10 +574,10 @@ ul.munths {
                                         {{ $t2 == null || $t2 == 0 ? "" : "& TL ".$t2}}
                                         {{ $t3 == null || $t3 == 0 ? "" : "& € ".$t3}}
                                         @if($t1 != 0 || $t2 != 0 || $t3 != 0)
-                                        <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
+                                        {{-- <div class="checkbox sus" style="margin-top: 4px;float: right;width: auto;">
                                             <input name="paids" type="checkbox" placeholder="paids" id="paids" value="1">
                                             <label for="paids"> , {{ __('Paid Done') }}</label>
-                                        </div>
+                                        </div> --}}
                                         <form id="form_paids" action="{{ Route('panel.movement.paid') }}" method="post" role="form text-left" style="display:none;float: right;margin-top: -2px;margin-left: 5px;">
                                             @csrf
                                             <input type="hidden" name="from_date" value="{{ @$request['from_date'] }}" />
@@ -589,7 +589,7 @@ ul.munths {
                                         </form>
                                         @endif
                                     @endif
-                                    
+
                                     @if($ispartner->id == 25)
                                         {{ $ispartner->blance_tlgn != 0 ? "TL" . $ispartner->blance_tlgn : "" }}
                                     @endif
@@ -644,7 +644,7 @@ ul.munths {
                             </table>
                         @endforeach
                     @endforeach
-                    
+
                 </div>
             </div>
         </div>
