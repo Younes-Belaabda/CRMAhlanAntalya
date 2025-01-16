@@ -1367,7 +1367,7 @@
                                     @if (isset($ispartner))
                                         @if ($ispartner->type == 5)
                                             , Ahlan Antalya &
-                                            {{ $ispartner->full_name }}{{ ($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) == true ? ': ' : '' }}
+                                            {{ $ispartner->full_name }}{{ ($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) == true ? '' : '' }}
                                             <!--    <span>-->
                                             <!--    {{ $ispartner->blance_usd == 0 ? '' : " $ " . $ispartner->blance_usd }}-->
                                             <!--    {{ $ispartner->blance_usd != 0 && $ispartner->blance_tl != 0 ? ' & ' : '' }}-->
@@ -1400,7 +1400,7 @@
     @endif-->
                                         @elseif($ispartner->id == 5)
                                             ,
-                                            {{ $ispartner->full_name }}{{ ($ispartner->blance_usd != 0 || $ispartner->blance_tl != 0 || $ispartner->blance_e != 0 || $ispartner->blance_p != 0) == true ? ': ' : '' }}
+                                            {{ $ispartner->full_name }}{{ ($ispartner->blance_usd != 0 || $ispartner->blance_tl != 0 || $ispartner->blance_e != 0 || $ispartner->blance_p != 0) == true ? '' : '' }}
                                             {{-- <span>
                                                 {{ $ispartner->blance_usd == 0 ? '' : " $ " . $ispartner->blance_usd }}
                                                 {{ $ispartner->blance_usd != 0 && $ispartner->blance_tl != 0 ? ' & ' : '' }}
@@ -1412,8 +1412,8 @@
                                             </span> --}}
                                         @else
                                             ,
-                                            {{ $ispartner->full_name }}{{ (($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) && $ispartner->id != 25) == true ? ': ' : ($ispartner->id == 25 && $ispartner->blance_tlgn != 0 ? ': ' : '') }}
-                                            <!--{{ ($t1 != 0 || $t2 != 0 || $t3 != 0 || @$ispartner->blance != 0 || $ispartner->blance_usd != 0) == true ? ': ' : '' }}-->
+                                            {{ $ispartner->full_name }}{{ (($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) && $ispartner->id != 25) == true ? '' : ($ispartner->id == 25 && $ispartner->blance_tlgn != 0 ? '' : '') }}
+                                            <!--{{ ($t1 != 0 || $t2 != 0 || $t3 != 0 || @$ispartner->blance != 0 || $ispartner->blance_usd != 0) == true ? '' : '' }}-->
                                         @endif
 
 
