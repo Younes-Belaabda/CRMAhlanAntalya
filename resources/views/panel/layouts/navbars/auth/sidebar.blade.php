@@ -42,6 +42,18 @@
                 </a>
             </li>
             @endif
+            @if(Auth()->user()->type == 1 || Auth()->user()->type == 5)
+            <li class="nav-item">
+                <a class="nav-link {{ Route::currentRouteName() == 'panel.notes.all' || Route::currentRouteName() == 'panel.todolist.add_new' || Route::currentRouteName() == 'panel.todolist.add_retweet' ? 'active' : '' }}"
+                    href="{{ route('panel.notes.all') }}">
+                    <div
+                        class="icon bg-white text-center me-2 d-flex align-items-center justify-content-center">
+                        <i class="fa fa-sticky-note ps-2 pe-2 text-center"></i>
+                    </div>
+                    <span class="nav-link-text ms-1">NOTES</span>
+                </a>
+            </li>
+            @endif
 
             @if(Auth()->user()->type == 1)
             <li class="nav-item">

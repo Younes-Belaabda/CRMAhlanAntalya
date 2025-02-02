@@ -1,8 +1,10 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
-
 use Illuminate\Http\Request;
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Middleware\VerifyCsrfToken;
+use App\Http\Controllers\Panel\NoteController;
 
 
 Route::get('/login', ['as' => 'login', 'uses' => 'LoginController@showLoginForm']);
@@ -18,9 +20,26 @@ Route::get('/logout', ['as' => 'logout', 'uses' => 'LoginController@logout']);
 Route::group(['prefix' => '/', 'middleware' => ['auth']], function(){
     Route::get('/', 'DashboardController@index')->name('dashboard');
 
+
+
     Route::get('/hotels', ['as' => 'hotels', 'uses' => 'PricesController@print']);
     Route::get('/transfers', ['as' => 'transfers', 'uses' => 'PricesController@print']);
     Route::get('/driver-tours', ['as' => 'driver-tours', 'uses' => 'PricesController@print']);
+
+    Route::group(['prefix' => '/note', 'as' => 'notes.'], function() {
+        Route::get('/show/{user}' , [NoteController::class , 'show'])
+        ->name('show');
+        Route::get('/show-movements/{user}/{movements}' , [NoteController::class , 'show_movements'])
+        ->name('show_movements');
+
+        Route::get('/all' , [NoteController::class , 'all'])
+        ->name('all');
+        Route::get('/create' , [NoteController::class , 'create'])
+        ->name('create');
+        Route::post('/store' , [NoteController::class , 'store'])
+        ->withoutMiddleware([VerifyCsrfToken::class])
+        ->name('store');
+    });
 
     Route::group(['prefix' => '/agent', 'as' => 'prices.'], function() {
         Route::get('/', ['as' => 'view', 'uses' => 'PricesController@index']);

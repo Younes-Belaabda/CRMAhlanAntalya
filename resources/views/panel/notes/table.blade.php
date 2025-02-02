@@ -114,13 +114,14 @@ $tj_date = date('Y-m-d'); ?>
     color="{{ $row->color }}">
     <td style="{{ $color }}" class="{{ $old_this == true ? 'CPRV' : '' }}  {{ $rosw != 0 ? 'has_old' : '' }}">
 
-        @if(request()->has('d_user') && request()->get('d_user') != null)
-            <input type="checkbox" value="{{$row->movement_id}}" class="mouvements_boxes">
+        @if (request()->has('d_user') && request()->get('d_user') != null)
+            <input type="checkbox" value="{{ $row->movement_id }}" class="mouvements_boxes">
         @endif
 
 
         @if ($rosw != 0)
-            <span class="upspan" style="float: left;width: 10px;"><i class="fa fa-arrow-up"></i> {{ $rosw }}</span>
+            <span class="upspan" style="float: left;width: 10px;"><i class="fa fa-arrow-up"></i>
+                {{ $rosw }}</span>
         @endif
         <p class="text-xs font-weight-bold mb-0">{{ $old_this == true ? 'PRV' : $OldCount + $key + 1 }}</p>
         <div class="itemsmobilew">
@@ -273,13 +274,9 @@ $tj_date = date('Y-m-d'); ?>
             $useme2 = '';
             if (isset($request['d_user']) && sizeof(@$row->users) == 1) {
                 if ($request['d_user'] == $row->users->first()->id) {
-                    $useme2 = '<a class="text-xsm font-weight-bold mb-0" href="' .
-                    url("/admin/entries?d_user=" . $row->users->first()->id)
-                    . '" style="background:' . $row->users->first()->background . ';color:' . $row->users->first()->color . '">DIRECT</a>';
+                    $useme2 = '<a class="text-xsm font-weight-bold mb-0" href="' . url('/admin/entries?d_user=' . $row->users->first()->id) . '" style="background:' . $row->users->first()->background . ';color:' . $row->users->first()->color . '">DIRECT</a>';
                 } else {
-                    $useme2 = '<a class="text-xsm font-weight-bold mb-0" href="' .
-                    url("/admin/entries?d_user=" . $row->users->first()->id)
-                    . '" style="background:' . $row->users->first()->background . ';color:' . $row->users->first()->color . '">' . $row->users->first()->full_name . '</a>';
+                    $useme2 = '<a class="text-xsm font-weight-bold mb-0" href="' . url('/admin/entries?d_user=' . $row->users->first()->id) . '" style="background:' . $row->users->first()->background . ';color:' . $row->users->first()->color . '">' . $row->users->first()->full_name . '</a>';
                 }
             }
             ?>
@@ -291,24 +288,16 @@ $tj_date = date('Y-m-d'); ?>
                         if ($request['d_user'] == $user->user->id) {
                         } else {
                             if ($user->type == 0) {
-                                $useme2 .= '<a class="text-xsm font-weight-bold mb-0" href="' .
-                                url('/admin/entries?d_user=' . $user->user->id)  .
-                                '"style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
+                                $useme2 .= '<a class="text-xsm font-weight-bold mb-0" href="' . url('/admin/entries?d_user=' . $user->user->id) . '"style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
                             } else {
-                                $useme1 .= '<a class="text-xsm font-weight-bold mb-0" href="' .
-                                url('/admin/entries?d_user=' . $user->user->id)
-                                . '" style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
+                                $useme1 .= '<a class="text-xsm font-weight-bold mb-0" href="' . url('/admin/entries?d_user=' . $user->user->id) . '" style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
                             }
                         }
                     } else {
                         if ($user->type == 0) {
-                            $useme2 .= '<a class="text-xsm font-weight-bold mb-0" href="' .
-                            url('/admin/entries?d_user=' . $user->user->id)
-                            .'" style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
+                            $useme2 .= '<a class="text-xsm font-weight-bold mb-0" href="' . url('/admin/entries?d_user=' . $user->user->id) . '" style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
                         } else {
-                            $useme1 .= '<a class="text-xsm font-weight-bold mb-0" href="' .
-                            url('/admin/entries?d_user=' . $user->user->id)
-                            .'" style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
+                            $useme1 .= '<a class="text-xsm font-weight-bold mb-0" href="' . url('/admin/entries?d_user=' . $user->user->id) . '" style="background:' . @$user->user->background . ';color:' . @$user->user->color . '">' . @$user->user->full_name . '</a>';
                         }
                         //$useme2 .= '<a class="text-xsm font-weight-bold mb-0" href="/admin/entries?d_user='.$user->id.'" style="background:'.@$user->background.';color:'.@$user->color.'">'.@$user->full_name .'</a>';
                     }
@@ -548,7 +537,8 @@ $tj_date = date('Y-m-d'); ?>
                 @if (isset($row->revenue_partner) && $row->revenue_partner != null)
                     <div class="{{ $row->sender_paid == 1 ? 'paid_div' : '' }}">
                         <span>PP</span>
-                        <span class="text-xst font-weight-bold mb-0">{{ $row->price_type . ' ' . $row->revenue_partner }}
+                        <span
+                            class="text-xst font-weight-bold mb-0">{{ $row->price_type . ' ' . $row->revenue_partner }}
                             @if (isset($ispartner->type) && $ispartner->type == 5)
                                 @if ($row->paybyus == '1' && isset($is_partner) && $is_partner == true)
                                     <i class="fa fa-arrow-left"></i>
@@ -596,7 +586,8 @@ $tj_date = date('Y-m-d'); ?>
                 @if ($row->t_profit != 0)
                     <div>
                         <span>TP</span>
-                        <span class="text-xst font-weight-bold mb-0">{{ $row->price_type . ' ' . $row->t_profit }}</span>
+                        <span
+                            class="text-xst font-weight-bold mb-0">{{ $row->price_type . ' ' . $row->t_profit }}</span>
                     </div>
                 @endif
             @endif

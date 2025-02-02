@@ -146,4 +146,8 @@ class User extends Authenticatable
         $q->where('type','!=','1');
     }
 
+    public function notes(){
+        return $this->hasMany(\App\Models\Note::class);
+    }
+
 }

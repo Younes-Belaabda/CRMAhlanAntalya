@@ -1,5 +1,14 @@
 @extends('panel.layouts.base', ['is_main' => true])
-@section('sub_title', isset($ispartner) ? strtoupper($ispartner->full_name) : ' View entries')
+
+@section('sub_title')
+    @isset($ispartner)
+        {{ strtoupper($ispartner->full_name) }}
+    @else
+        View entries
+    @endisset
+@endsection
+
+
 @section('content')
     @push('panel_css')
     @endpush
@@ -94,458 +103,8 @@
     $_3_3 = 0;
     $_3_4 = 0;
     $_4_1 = 0;
-    function sumAmountByCurrencyMove($collection, $year, $state, $currency)
-    {
-        if ($year == 'revenue_partner') {
-            return $collection->where('price_type', $currency)->sum('revenue_partner');
-        }
-        if ($year == null) {
-            $sum = $collection->where('price_type', $currency)->where('paybyus', '1');
-            if ($state == 0 || $state == 1) {
-                $sum = $sum->where('sender_paid', $state);
-            }
-            $sum = $sum->sum('price');
-            return $sum;
-        }
-
-        return $collection->where('price_type', $currency)->where('new_date', $year)->where('sender_paid', $state)->sum('price');
-    }
-    function sumAmountByCurrencyMoveCount($collection, $year, $state)
-    {
-        if ($year == 'revenue_partner') {
-            return $collection->Count();
-        }
-        if ($year == 'profit') {
-            return $collection->whereNotNull('revenue_partner')->Count();
-        }
-        if ($year == null) {
-            return $collection->where('paybyus', '1')->where('sender_paid', $state)->Count();
-        }
-
-        return $collection->where('new_date', $year)->where('sender_paid', $state)->Count();
-    }
-    function sumAmountByCurrencyInc($collection, $year, $currency, $type)
-    {
-        if ($type == 'Income') {
-            $collection = $collection->where('type', 'Income');
-        } else {
-            $collection = $collection->where('type', 'Expenses');
-        }
-
-        if ($year == null) {
-            return $collection->where('price_type', $currency)->whereNull('movement_id')->sum('price');
-        }
-        return $collection->where('price_type', $currency)->where('new_date', $year)->whereNull('movement_id')->sum('price');
-    }
-    ?>
-    <?php
-
-    function sumProfitPartners($collection, $type, $currency)
-    {
-        $sum = 0;
-        $collection = $collection->where('status', 0);
-        if ($type == '5') {
-            $sum = $collection->where('price_type', $currency)->sum('revenue_partner');
-        }
-        return $sum;
-    }
-
-    function sumPartnersUnPaid($collection, $type, $currency)
-    {
-        $sum = 0;
-        $collection = $collection->where('status', 0);
-
-        if ($type == '5') {
-            $sum = $collection->where('price_type', $currency)->where('paybyus', '1')->sum('price');
-        }
-        return $sum;
-    }
-    function sumPartners($collection, $type, $currency)
-    {
-        $sum = 0;
-        $collection = $collection->where('status', 0);
-        if ($type == '5') {
-            $sum0 = $collection->where('price_type', $currency)->where('paybyus', '1')->sum('price');
-            $sum1 = $collection->where('price_type', $currency)->where('paybyus', '0')->sum('revenue_partner');
-            $sum = $sum1 - $sum0;
-        } else {
-            $collection = $collection->wherein('user_id', [1, 2, 3, 4, 5]);
-            $sum = $collection->where('price_type', $currency)->where('paybyus', '0')->sum('revenue') + $collection->where('price_type', $currency)->where('paybyus', '0')->sum('revenue_partner') + $collection->where('price_type', $currency)->where('paybyus', '0')->sum('admin_partner');
-            //dd($sum);
-            $sum_com = $collection->where('admin_commission_type', $currency)->Where('admin_commission', '!=', '0')->sum('admin_commission') + $collection->where('commission_type', $currency)->Where('commission', '!=', '0')->sum('commission');
-
-            $sum = $sum + $sum_com;
-            $sum = $sum - $collection->where('price_type', $currency)->where('paybyus', '1')->sum('net');
-        }
-        return $sum;
-    }
-
-    function sumAmountByCurrency($collection, $type, $currency)
-    {
-        $rev = 'revenue';
-        $collection = $collection->where('price_type', $currency);
-        if ($type == '5') {
-            $rev = 'revenue_partner';
-        } else {
-            $collection = $collection->where('status', 1);
-        }
-        return $collection->sum($rev);
-    }
-    function sumAmountByCurrencyAllsPrice($collection, $type, $currency)
-    {
-        $net02 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->sum('price');
-
-        return $net02;
-    }
-    function sumAmountByCurrencyAllsNets2($collection, $type, $currency)
-    {
-        $net = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-        if ($currency == 'TL') {
-            $net1 = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-            $net3 = $collection->where('price_type', '!=', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->sum('net_tl');
-            $net = $net1 + $net3;
-        }
-
-        $net021 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('revenue_partner');
-        $net02 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('admin_partner');
-        $net012 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('revenue');
-        $net2 = $net02 + $net012 + $net021;
-        if ($currency == 'TL') {
-            // dd($collection->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0"));
-            $net6 = 0; //$collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("admin_partner");
-            $net4 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-            $net5 = $collection->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->sum('net_tl');
-            $net2 = $net4 + $net5 + $net6;
-        }
-        if ($type == 'net2') {
-            return $net2;
-        }
-        if ($type == 'net') {
-            return $net;
-        }
-
-        if ($type == null) {
-            $net = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-            if ($currency == 'TL') {
-                $net1 = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-                $net3 = $collection->where('price_type', '!=', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->sum('net_tl');
-                $net = $net1 + $net3;
-            }
-
-            $net02 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('admin_partner');
-            $net2 = $net02 + $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('revenue');
-            if ($currency == 'TL') {
-                $net02 = 0; //$collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("admin_partner");
-                $net4 = $net02 + $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-                $net5 = $collection->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->sum('net_tl');
-                $net2 = $net4 + $net5;
-            }
-
-            return $net2 + $net;
-        }
-    }
-    function sumAmountByCurrencyAllsNetsTicket($collection, $type, $currency)
-    {
-        $collection = $collection->where('type', 'T & T')->where('price_type', $currency);
-        return 0;
-    }
-    function CountofTypeNetsTicket($collection, $type, $currency)
-    {
-        $collection = $collection->where('type', 'T & T')->where('paybyus', 0);
-        if ($type == 'dircit') {
-            $collection = $collection->where('t_paid', 0);
-        }
-        if ($type == 'us') {
-            $collection = $collection->where('t_paid', 1);
-        }
-        return $collection->count();
-    }
-    function sumAmountByCurrencyTicket($collection, $type, $currency)
-    {
-        //dd($collection,$type, $currency);
-        $sum = 0;
-        $net = 0;
-        $price = 0;
-        $collection = $collection->where('type', 'T & T')->where('price_type', $currency)->where('paybyus', 0);
-        if ($type == 'dircit') {
-            $sum = $collection->where('t_paid', 0)->sum('t_net');
-        }
-        if ($type == 'us') {
-            $sum = $collection->where('t_paid', 1)->sum('t_net');
-        }
-        if ($type == null) {
-            $sum = $collection->where('t_paid', 1)->sum('t_net');
-        }
-        //$sum = $price - $net;
-        return $sum;
-    }
-    function sumAmountByCurrencyAllsNets($collection, $type, $currency)
-    {
-        $ticks = 0;
-        $org_collection = $collection;
-        //dd($collection);
-        $net = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-        if ($currency == 'TL') {
-            $net1 = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-            $net3 = $collection->where('price_type', '!=', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->sum('net_tl');
-            $net = $net1 + $net3;
-        }
-
-        $net021 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('revenue_partner');
-        $net02 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('admin_partner');
-        $net012 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('revenue');
-        $net2 = $net02 + $net012 + $net021;
-        //dd($net2);
-        if ($currency == 'TL') {
-            // dd($collection->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0"));
-            //$net6 = 0;//$collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("admin_partner");
-            //$net4 = $collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
-            //$net5 = $collection->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
-            //$net2 = $net4+$net5+$net6;
-        }
-        if ($type == 'net2') {
-            return $net2;
-        }
-        if ($type == 'net') {
-            return $net;
-        }
-
-        if ($type == null) {
-            $net = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-            if ($currency == 'TL') {
-                $net1 = $collection->where('price_type', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('net');
-                $net3 = $collection->where('price_type', '!=', $currency)->where('paybyus', '1')->where('leader_paid', '0')->where('status', '0')->sum('net_tl');
-                $net = $net1 + $net3;
-            }
-
-            $net021 = $collection->where('admin_commission_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('admin_commission', '!=', '0')->sum('admin_commission');
-            $net021 += $collection->where('commission_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('commission', '!=', '0')->sum('commission');
-            $net021 += $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('revenue_partner');
-            $net02 = $net021 + $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('admin_partner');
-            $net2 = $net02 + $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', '0')->where('status', '0')->where('net_tl', 0)->sum('revenue');
-            if ($currency == 'TL') {
-                // $net021 = $collection->where('admin_commission_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("admin_commission","!=","0")->sum("admin_commission");
-                // $net021 += $collection->where('commission_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("commission","!=","0")->sum("commission");
-
-                // $net02 = $net021+0;//$collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("admin_partner");
-                // $net4 = $net02+$collection->where('price_type', $currency)->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->where("net_tl",0)->sum("net");
-                // $net5 = $collection->where("paybyus" , "0")->where("leader_paid" , "0")->where("status","0")->sum("net_tl");
-                // $net2 = $net4+$net5;
-            }
-            $ticks = sumAmountByCurrencyTicket($org_collection, 'us', $currency);
-            return $net2 + $ticks - $net;
-        }
-    }
-    function sumAmountByCurrencyAlls($collection, $type, $currency)
-    {
-        $net = $collection->where('price_type', $currency)->where('paybyus', '1')->where('status', '1')->where('net_tl', 0)->sum('net');
-        if ($currency == 'TL') {
-            $net1 = $collection->where('price_type', $currency)->where('paybyus', '1')->where('status', '1')->where('net_tl', 0)->sum('net');
-            $net3 = $collection->where('price_type', '!=', $currency)->where('paybyus', '1')->where('status', '1')->sum('net_tl');
-            $net = $net1 + $net3;
-        }
-
-        $net2 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('status', '1')->where('net_tl', 0)->sum('net');
-
-        if ($currency == 'TL') {
-            $net4 = $collection->where('price_type', $currency)->where('paybyus', '0')->where('status', '1')->where('net_tl', 0)->sum('net');
-            $net5 = $collection->where('paybyus', '0')->where('status', '1')->sum('net_tl');
-            $net2 = $net4 + $net5;
-        }
-
-        $unpaid = $collection->where('price_type', $currency)->where('paybyus', '1')->where('status', '0')->where('net_tl', 0)->sum('net');
-        if ($currency == 'TL') {
-            $net6 = $collection->where('price_type', $currency)->where('paybyus', '1')->where('status', '0')->where('net_tl', 0)->sum('net');
-            $net7 = $collection->where('paybyus', '1')->where('status', '0')->sum('net_tl');
-            $unpaid = $net7 + $net6;
-        }
-
-        $profit = $collection->where('price_type', $currency)->where('paybyus', '0')->where('status', '1')->sum('revenue');
-        $profit2 = $collection->where('price_type', $currency)->where('paybyus', '1')->where('status', '1')->sum('revenue');
-        if ($type == 'profit') {
-            return $profit;
-        }
-        if ($type == 'paid') {
-            return $profit2;
-        }
-        if ($type == 'unpaid') {
-            return $unpaid;
-        }
-        if ($type == 'net') {
-            return $net;
-        }
-        if ($type == 'net2') {
-            return $net2;
-        }
-        if ($type == null) {
-            $net = $collection->where('price_type', $currency)->where('net_tl', 0)->sum('net');
-            if ($currency == 'TL') {
-                $net1 = $collection->where('price_type', $currency)->where('net_tl', 0)->sum('net');
-                $net3 = $collection->where('price_type', '!=', $currency)->sum('net_tl');
-                $net = $net1 + $net3;
-            }
-            return $net;
-        }
-        return $net + $net2;
-    }
-    function sumAmountByCurrencyAllAdmin($collection, $type, $currency)
-    {
-        $s = $collection->where('price_type', $currency)->WhereNotNull('admin_partner')->sum('admin_partner');
-        $s2 = $collection->where('admin_commission_type', $currency)->Where('admin_commission', '!=', '0')->sum('admin_commission');
-        return $s + $s2;
-    }
-    function sumAmountByCurrencyAll($collection, $type, $currency)
-    {
-        try {
-            return $collection->where('price_type', $currency)->where('status', 1)->sum('revenue') + $collection->where('commission_type', $currency)->where('status', 1)->sum('commission');
-        } catch (\Exception $e) {
-            return '0';
-        }
-    }
-    function sumProfitPartnerAll($collection, $type, $currency)
-    {
-        return $collection->where('status', 1)->sum('revenue_partner');
-    }
-    function sumAmountByCurrencyC($collection, $type, $currency)
-    {
-        return $collection->where('commission_type', $currency)->where('status', 0)->sum('commission');
-    }
-    function sumAmountByCurrencyCOfType($collection, $type, $currency)
-    {
-        $sum = $collection->where('type', $type)->where('status', 1)->where('commission_type', $currency)->sum('commission');
-        return $sum == 0 ? null : $sum;
-    }
-    function sumAmountByCurrencyPOfType($collection, $type, $currency)
-    {
-        $sum = $collection->where('type', $type)->where('status', 1)->where('price_type', $currency)->sum('revenue');
-        return $sum == 0 ? null : $sum;
-    }
-
-    function AdminsumAmountByCurrencyAll($collection, $type, $currency)
-    {
-        return $collection->where('price_type', $currency)->where('status', 1)->sum('admin_partner') + $collection->where('admin_commission_type', $currency)->where('status', 1)->sum('admin_commission');
-    }
-    function AdminsumAmountByCurrencyCOfType($collection, $type, $currency)
-    {
-        $sum = $collection->where('type', $type)->where('status', 1)->where('admin_commission_type', $currency)->sum('admin_commission');
-        return $sum == 0 ? null : $sum;
-    }
-    function AdminsumAmountByCurrencyPOfType($collection, $type, $currency)
-    {
-        $sum = $collection->where('type', $type)->where('status', 1)->where('price_type', $currency)->sum('admin_partner');
-        return $sum == 0 ? null : $sum;
-    }
-
-    function CountofTypeAadminCont($collection, $type, $currency)
-    {
-        $sum = $collection->Where('admin_commission', '!=', '0')->count();
-        return $sum == 0 ? null : $sum;
-    }
-    function CountofTypeACont($collection, $type, $currency)
-    {
-        $sum = $collection->Where('commission', '!=', '0')->count();
-        return $sum == 0 ? null : $sum;
-    }
-
-    function CountofTypeAdminAC2($collection, $type, $currency)
-    {
-        if ($type == null) {
-            $sum = $collection->Where('admin_partner', '!=', null)->where('status', 1)->count();
-        } else {
-            $sum = $collection->Where('admin_partner', '!=', null)->where('type', $type)->where('status', 1)->count();
-        }
-        return $sum == 0 ? null : $sum;
-    }
-    function CountofTypeAdminAC($collection, $type, $currency)
-    {
-        if ($type == null) {
-            $sum = $collection->Where('admin_commission', '!=', '0')->count();
-        } else {
-            $sum = $collection->Where('admin_commission', '!=', '0')->where('type', $type)->where('status', 1)->count();
-        }
-        return $sum == 0 ? null : $sum;
-    }
-    function sumAmountByCurrencyAllAdminAC($collection, $type, $currency)
-    {
-        return $collection->where('admin_commission_type', $currency)->where('status', 0)->Where('admin_commission', '!=', '0')->sum('admin_commission');
-    }
-    function CountofTypeAdmin($collection, $type, $currency)
-    {
-        if ($type == 'd') {
-            return $collection->WhereNotNull('admin_partner')->where('status', 1)->count();
-        }
-        if ($type == 'paid') {
-            return $collection->WhereNotNull('admin_partner')->where('status', 0)->count();
-        }
-        if ($type == 'net2') {
-            return $collection->WhereNotNull('admin_partner')->where('paybyus', '0')->where('status', 1)->count();
-        }
-        if ($type == 'net') {
-            return $collection->WhereNotNull('admin_partner')->where('paybyus', '1')->where('status', 1)->count();
-        }
-        if ($type == 'unpaid') {
-            return $collection->WhereNotNull('admin_partner')->where('paybyus', '1')->where('status', 0)->count();
-        }
-        if ($type == null) {
-            $sum = $collection->WhereNotNull('admin_partner')->count();
-        } else {
-            $sum = $collection->WhereNotNull('admin_partner')->where('type', $type)->where('status', 1)->count();
-        }
-        return $sum == 0 ? null : $sum;
-    }
-    function CountofTypeNets2($collection, $type, $currency)
-    {
-        return $collection->where('price_type', $currency)->where('paybyus', '0')->where('leader_paid', 0)->where('status', '0')->count();
-    }
-    function CountofTypeNets($collection, $type, $currency)
-    {
-        if ($type == 'd') {
-            return $collection->where('leader_paid', 0)->where('status', '0')->count();
-        }
-        if ($type == 'paid') {
-            return $collection->where('leader_paid', 0)->where('status', '0')->count();
-        }
-        if ($type == 'net2') {
-            return $collection->where('paybyus', '0')->where('status', '0')->where('leader_paid', 0)->count();
-        }
-        if ($type == 'net') {
-            return $collection->where('paybyus', '1')->where('status', '0')->where('leader_paid', 0)->count();
-        }
-        if ($type == 'unpaid') {
-            return $collection->where('paybyus', '1')->where('status', '0')->where('leader_paid', 0)->count();
-        }
-        if ($type == null) {
-            $sum = $collection->where('leader_paid', 0)->where('status', '0')->count();
-        } else {
-            $sum = $collection->where('type', $type)->where('status', '0')->where('leader_paid', 0)->count();
-        }
-        return $sum == 0 ? 0 : $sum;
-    }
-    function CountofType($collection, $type, $currency)
-    {
-        if ($type == 'd') {
-            return $collection->where('status', 1)->count();
-        }
-        if ($type == 'paid') {
-            return $collection->where('status', 0)->count();
-        }
-        if ($type == 'net2') {
-            return $collection->where('paybyus', '0')->where('status', 1)->count();
-        }
-        if ($type == 'net') {
-            return $collection->where('paybyus', '1')->where('status', 1)->count();
-        }
-        if ($type == 'unpaid') {
-            return $collection->where('paybyus', '1')->where('status', 0)->count();
-        }
-        if ($type == null) {
-            $sum = $collection->count();
-        } else {
-            $sum = $collection->where('type', $type)->where('status', 1)->count();
-        }
-        return $sum == 0 ? null : $sum;
-    }
-
+    $tod1 = date('M', strtotime($cur_today));
+    $tod2 = date('d', strtotime($cur_today));
     ?>
     <style>
         .text-xsm {
@@ -804,79 +363,13 @@
             }
         }
     </style>
-    <?php
-    $tod1 = date('M', strtotime($cur_today));
-    $tod2 = date('d', strtotime($cur_today));
-    ?>
-    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
-        aria-hidden="true">
-        <div class="modal-dialog" role="document" style="
-    width: 350px;
-">
-            <div class="modal-content" id="exp_pdf2">
-                <div class="modal-header" style="
-    background: #fff;
-">
-                    <h5 class="modal-title" id="exampleModalLabel" style="color:#E91E63;font-weight: bold;"><b>Today ENTRIES
-                        </b>
-                        <span class="caldn"><b>{{ $tod1 }}</b><small>{{ $tod2 }}</small><i
-                                class="far fa-calendar"></i></span>
-                    </h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body" style="background: #fff;">
-                    <div class="item_ent">
-                        <ul>
-                            <?php $simsw = 0; ?>
-                            @foreach ($data_today as $row)
-                                <li>
-                                    <b>
-                                        @if ($row->type == 'Transfers')
-                                            <i class="fas fa-user-clock"></i>
-                                        @elseif($row->type == 'Driver Tours')
-                                            <i class="fa fa-car"></i>
-                                        @elseif($row->type == 'Group Tours')
-                                            <i class="fas fa-bus-alt"></i>
-                                        @elseif($row->type == 'hotels')
-                                            <i class="fas fa-bed"></i>
-                                        @elseif($row->type == 'Flights')
-                                            <i class="fas fa-plane-departure"></i>
-                                        @elseif($row->type == 'Other Services')
-                                            <i class="fa fa-check-circle"></i>
-                                        @elseif($row->type == 'T & T')
-                                            <i class="fas fa-id-card-alt"></i>
-                                        @else
-                                            {{ $row->type }}
-                                        @endif
-                                        {{ $row->type }}:
-                                    </b>
-                                    (
-                                    @foreach ($row->users as $key => $suser)
-                                        @if ($key != 0)
-                                            +
-                                        @endif
-                                        <small style="color:{{ @$suser->m_user->background }}"
-                                            title="{{ @$suser->m_user->user_name }}">{{ $suser->total }}</small>
-                                        <?php $simsw += $suser->total; ?>
-                                    @endforeach
-                                    )
-                                </li>
-                            @endforeach
-                            <li style="
-    margin-top: 15px;
-    margin-bottom: 0;
-"><b style="color:#E91E63">Total:</b>
-                                <small style="
-    font-size: 16px;
-">{{ $simsw }}</small></li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+
+
+
+
+
+
+
     <div class="row">
         <div class="col-12" style="position: relative;">
             <div class="card mb-4 mx-4 pb-2 filters_All" style="position: sticky;right: 0;left: 17%;z-index: 3;top: 4px;">
@@ -937,6 +430,7 @@
                                 <span class="caldn" data-toggle="modal"
                                     data-target="#exampleModal"><b>{{ $tod1 }}</b><small>{{ $tod2 }}</small><i
                                         class="far fa-calendar"></i></span>
+
                                 @if ($cons != 0)
                                     <form action="{{ Route('panel.movement.view') }}" class="caldnf2" method="Get"
                                         role="form text-left">
@@ -983,16 +477,6 @@
                                     </ul>
                                 @endif
                             @endif
-                            {{-- <div>
-                                <form action="">
-
-                                    <button href="" class="btn bg-gradient-dark btn-sm mb-2">2024</button>
-                                </form>
-                                <form action="">
-
-                                    <button href="" class="btn bg-gradient-dark btn-sm mb-2">2025</button>
-                                </form>
-                            </div> --}}
                             <ul class="munths">
                                 <?php
                                 $its = \App\Models\Movement::where('completed', '0')->whereBetween('date', [$year . '-01-01', $year . '-01-31']);
@@ -1215,6 +699,13 @@
                                 <a href="{{ route('panel.movement.add_new') }}" class="btn bg-gradient-dark btn-sm mb-2"
                                     type="button">+&nbsp; New entry</a>
                             @endif
+                            @if ($aush->type == 1 || $aush->type == 5)
+                                @if (request()->has('d_user') && request()->get('d_user') != null)
+                                    <button class="btn-note caldn btn bg-gradient-dark btn-sm mb-2">
+                                        GO
+                                    </button>
+                                @endif
+                            @endif
                         </div>
                     </div>
                 </div>
@@ -1401,15 +892,6 @@
                                         @elseif($ispartner->id == 5)
                                             ,
                                             {{ $ispartner->full_name }}{{ ($ispartner->blance_usd != 0 || $ispartner->blance_tl != 0 || $ispartner->blance_e != 0 || $ispartner->blance_p != 0) == true ? '' : '' }}
-                                            {{-- <span>
-                                                {{ $ispartner->blance_usd == 0 ? '' : " $ " . $ispartner->blance_usd }}
-                                                {{ $ispartner->blance_usd != 0 && $ispartner->blance_tl != 0 ? ' & ' : '' }}
-                                                {{ $ispartner->blance_tl == 0 ? '' : ' TL ' . $ispartner->blance_tl }}
-                                                {{ $ispartner->blance_tl != 0 && $ispartner->blance_e != 0 ? ' & ' : '' }}
-                                                {{ $ispartner->blance_e == 0 ? '' : ' € ' . $ispartner->blance_e }}
-                                                {{ $ispartner->blance_e != 0 && $ispartner->blance_p != 0 ? ' & ' : '' }}
-                                                {{ $ispartner->blance_p == 0 ? '' : ' £ ' . $ispartner->blance_p }}
-                                            </span> --}}
                                         @else
                                             ,
                                             {{ $ispartner->full_name }}{{ (($ispartner->s_usd != 0 || $ispartner->s_p != 0 || $ispartner->s_e != 0 || $ispartner->s_tl != 0) && $ispartner->id != 25) == true ? '' : ($ispartner->id == 25 && $ispartner->blance_tlgn != 0 ? '' : '') }}
@@ -1764,12 +1246,81 @@
         </div>
     </div>
 
+    <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog" role="document" style="width: 350px;">
+            <div class="modal-content" id="exp_pdf2">
+                <div class="modal-header" style="background: #fff;">
+                    <h5 class="modal-title" id="exampleModalLabel" style="color:#E91E63;font-weight: bold;"><b>Today
+                            ENTRIES
+                        </b>
+                        <span class="caldn"><b>{{ $tod1 }}</b><small>{{ $tod2 }}</small><i
+                                class="far fa-calendar"></i></span>
+                    </h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body" style="background: #fff;">
+                    <div class="item_ent">
+                        <ul>
+                            <?php $simsw = 0; ?>
+                            @foreach ($data_today as $row)
+                                <li>
+                                    <b>
+                                        @if ($row->type == 'Transfers')
+                                            <i class="fas fa-user-clock"></i>
+                                        @elseif($row->type == 'Driver Tours')
+                                            <i class="fa fa-car"></i>
+                                        @elseif($row->type == 'Group Tours')
+                                            <i class="fas fa-bus-alt"></i>
+                                        @elseif($row->type == 'hotels')
+                                            <i class="fas fa-bed"></i>
+                                        @elseif($row->type == 'Flights')
+                                            <i class="fas fa-plane-departure"></i>
+                                        @elseif($row->type == 'Other Services')
+                                            <i class="fa fa-check-circle"></i>
+                                        @elseif($row->type == 'T & T')
+                                            <i class="fas fa-id-card-alt"></i>
+                                        @else
+                                            {{ $row->type }}
+                                        @endif
+                                        {{ $row->type }}:
+                                    </b>
+                                    (
+                                    @foreach ($row->users as $key => $suser)
+                                        @if ($key != 0)
+                                            +
+                                        @endif
+                                        <small style="color:{{ @$suser->m_user->background }}"
+                                            title="{{ @$suser->m_user->user_name }}">{{ $suser->total }}</small>
+                                        <?php $simsw += $suser->total; ?>
+                                    @endforeach
+                                    )
+                                </li>
+                            @endforeach
+                            <li style="margin-top: 15px;margin-bottom: 0;"><b style="color:#E91E63">Total:</b>
+                                <small style="font-size: 16px;">{{ $simsw }}</small>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <form style="visibility: hidden" id="frm-note-create" action="{{ route('panel.notes.create') }}" method="get">
+        <input id="i_entries" type="text" name="entries">
+        <input id="i_user_id" type="text" value="{{ request()->get('d_user') }}" class="d_user_ipt" name="user_id">
+    </form>
+
+
+
 @section('panel_js')
     <script>
         $(document).ready(function() {
-            // tr_15-Apr
             var date = "tr_{{ Carbon\Carbon::now()->format('d-M') }}";
-            //console.log(date);
             var len = $(".table").find("#" + date).length;
             var lens = $(".table").find(".sredcol").length;
             console.log($(".table").find(".sredcol").offset());
@@ -1777,11 +1328,51 @@
                 $('html, body').animate({
                     scrollTop: $(".table").find(".sredcol").offset().top - 70
                 });
-                //$(".table").find(".sredcol")[0].scrollIntoView();
             } else if ($(".table").find(".tr_last").length >= 1) {
-                //$('html, body').animate({scrollTop: $(".table").find(".tr_last").offset().top - 70 });
                 $(".tr_last")[0].scrollIntoView();
             }
+
+            $('.btn-note').on('click', function(e) {
+
+                var mouvments_boxes = $('.mouvements_boxes:checked');
+                var i_entries = $('#i_entries');
+                var duserid = $('.d_user_ipt').val();
+                var form = $('#frm-note-create');
+                if (mouvments_boxes.length == 0) {
+                    alert('Check Entries !');
+                } else {
+                    var entries = [];
+                    mouvments_boxes.each((i, item) => {
+                        entries.push(item.value);
+                    });
+
+                    i_entries.val(entries);
+
+                    form.submit();
+
+                    // var url = $(this).data('url');
+
+                    // var url = $(this).data('url');
+                    // var response = await fetch(url, {
+                    //     method: 'POST',
+                    //     headers: {
+                    //         "Content-Type": "application/json",
+                    //     },
+                    //     body: JSON.stringify({
+                    //         entries: entries,
+                    //         user_id: duserid,
+                    //         note: txt_note.val()
+                    //     })
+                    // });
+                    // var res = await response.json();
+                    // if(res.status){
+                    //     location.reload();
+                    //     // setTimeout(() => {
+                    //     //     alert('Success !');
+                    //     // }, 2000);
+                    // }
+                }
+            });
         });
     </script>
 @endsection
