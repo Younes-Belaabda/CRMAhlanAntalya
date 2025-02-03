@@ -76,13 +76,14 @@ class NoteController extends Controller
     }
 
     public function show_movements(User $user , $movements = []){
-        $n = $movements[0];
+        $n = explode(',' , $movements)[0];
+        // dd($n);
         $movements = \App\Models\MovementNote::whereIn('id' , explode(',' , $movements))->pluck('movement_id')->toArray();
 
-        // dd($n);
 
-        $note = \App\Models\Note::find($n)->first();
+        $note = \App\Models\MovementNote::where('id' , $n)->first()->note;
 
+        // dd($note);
         $movements = \App\Models\Movement::whereIn('movement_id' , $movements)->get();
 
         return view('panel.notes.show_movements' , compact('user' , 'movements' , 'note'));
