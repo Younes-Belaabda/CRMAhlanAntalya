@@ -6,7 +6,7 @@
 
 @section('content')
     @php
-        $note = \App\Models\MovementNote::where('movement_id', $movements[0]->movement_id)->first()->note;
+        // $note = \App\Models\MovementNote::where('movement_id', $movements[0]->movement_id)->first()->note;
     @endphp
     <div class="container">
         <div class="row">
