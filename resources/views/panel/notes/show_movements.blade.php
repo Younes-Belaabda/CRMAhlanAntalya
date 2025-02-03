@@ -19,7 +19,7 @@
                             <b>
                                 Date:
                             </b>
-                            {{ $note->created_at->format('d-m-Y, H:i:s') }}
+                            {{ $note->created_at->format('d-m-Y, H:i') }}
                         </div>
                         <br>
                         <table class="table forprint align-items-center mb-2">
@@ -40,25 +40,60 @@
                                 @foreach ($movements as $mov)
                                     <tr>
                                         <td>{{ $loop->index + 1 }}</td>
-                                        <td >{{ movement_date_format($mov->date) }}
+                                        @php
+                                            $cur_bg = '';
+                                            if ($mov->color == '1') {
+                                                $cur_bg = '#ff0000';
+                                            } elseif ($mov->color == '2') {
+                                                $cur_bg = '#fffc00';
+                                            } elseif ($mov->color == '3') {
+                                                $cur_bg = '#12ff00';
+                                            } elseif ($mov->color == '4') {
+                                                $cur_bg = '#00fff0';
+                                            } elseif ($mov->color == '5') {
+                                                $cur_bg = '#ffc107';
+                                            }
+                                        @endphp
+                                        <td style="background-color: {{ $cur_bg }}">
+                                            {{ movement_date_format($mov->date) }}
                                             @isset($mov->to_date)
                                                 <br> {{ movement_date_format($mov->to_date) }}
                                             @endisset
                                         </td>
-                                        <td>{!! movement_type_icon($mov->type) !!}</td>
-                                        <td>{{ $mov->customer }}</td>
-                                        <td>{{ abreviation_country($mov->country->name) }}</td>
-                                        <td>{{ $mov->description }}</td>
-                                        <td>{{ $mov->m_user->user_name }}</td>
-                                        <td>
+                                        <td style="background-color: {{ $cur_bg }}">{!! movement_type_icon($mov->type) !!}</td>
+                                        <td style="background-color: {{ $cur_bg }}">{{ $mov->customer }}</td>
+                                        <td style="background-color: {{ $cur_bg }}">{{ abreviation_country($mov->country->name) }}</td>
+                                        <td style="background-color: {{ $cur_bg }}">{{ $mov->description }}</td>
+                                        <td
+                                            style="background-color: {{ $mov->m_user->background }} ; color : {{ $mov->m_user->color }}">
+                                            {{ $mov->m_user->user_name }}</td>
+                                        @php
+                                            $user_style = 'background-color: #016E8F; color:white';
+                                            if ($mov->sender_user != null) {
+                                                $usr = \App\User::find($mov->sender_user->user_id);
+                                                $user_style = "background-color: {$usr->background}; color:{$usr->color}";
+                                            }
+                                        @endphp
+                                        <td style="{{ $user_style }}">
                                             @if ($mov->sender_user == null)
                                                 DIRECT
                                             @else
-                                                {{ \App\User::find($mov->sender_user->user_id)->user_name }}
+                                                {{ $usr->user_name }}
                                             @endif
                                         </td>
+                                        @php
+                                            $price_style = 'background-color:#A6D5FA';
+                                            // dump($mov);
+                                            if ($mov->paybyus) {
+                                                if ($mov->sender_paid) {
+                                                    $price_style = 'background-color:#12FF00';
+                                                } else {
+                                                    $price_style = 'background-color:#FFFC00';
+                                                }
+                                            }
+                                        @endphp
                                         @if ($mov->commission)
-                                            <td>
+                                            <td style="{{ $price_style }}">
                                                 <div style="border-bottom: 1px solid">
                                                     <span>P1 | {{ $mov->price }} $</span>
                                                 </div>
@@ -67,33 +102,59 @@
                                                 </div>
                                             </td>
                                         @else
-                                            <td>{{ $mov->price }} $</td>
+                                            <td style="{{ $price_style }}">{{ $mov->price }} $</td>
                                         @endif
-                                        <td>{{ $mov->net }} $</td>
-                                        <td>{{ $mov->revenue }} $</td>
+                                        @php
+                                            $net_style = 'background-color:#A6D5FA';
+                                            // dump($mov);
+                                            if($mov->paybyus){
+                                                if($mov->leader_paid){
+                                                    $net_style = "background-color:#12FF00";
+                                                }else{
+                                                    $net_style = "background-color:#FFFC00";
+                                                }
+                                            }
+                                        @endphp
+                                        <td style="{{ $net_style }}">{{ $mov->net }} $</td>
+                                        @php
+                                            $profite_style = 'background-color:#A6D5FA';
+                                            // dump($mov);
+                                            if($mov->paybyus){
+                                                if($mov->status){
+                                                    $profite_style = "background-color:#12FF00";
+                                                }else{
+                                                    $profite_style = "background-color:#FFFC00";
+                                                }
+                                            }
+                                        @endphp
+                                        <td style="{{ $profite_style }}">{{ $mov->revenue }} $</td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
 
-                        <form action="{{ route('panel.notes.update', [
-                            'note' => $note,
-                        ]) }}"
+                        <form
+                            action="{{ route('panel.notes.update', [
+                                'note' => $note,
+                            ]) }}"
                             method="post">
                             @csrf
 
                             <div class="form-group">
-                                <label for="" class="form-label">Note</label>
+                                <div style="margin: 10px 0">
+                                    <b style="color: red">Note</b>
+                                </div>
                                 <textarea class="form-control" name="content" id="" cols="10" rows="5">{{ $note->content }}</textarea>
                             </div>
-                            <div class="checkbox mb-3" style="margin-top: 11px;">
-                                <input name="is_finished" type="checkbox"
-                                    placeholder="Completed"
-                                    @if($note->is_finished) checked @endif
-                                    id="Completed" value="{{ $note->is_finished }}">
-                                <label for="Completed">Completed</label>
+                            <div class="d-flex">
+                                <button class="btn bg-gradient-dark">Edit</button>
+                                <div class="checkbox mb-3" style="margin-top: 11px;">
+                                    <input name="is_finished" type="checkbox" placeholder="Completed"
+                                        @if ($note->is_finished) checked @endif id="Completed"
+                                        value="{{ $note->is_finished }}">
+                                    <label for="Completed">Completed</label>
+                                </div>
                             </div>
-                            <button class="btn btn-success">Edit</button>
                         </form>
                     </div>
                 </div>

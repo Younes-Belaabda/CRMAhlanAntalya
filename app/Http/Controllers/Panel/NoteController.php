@@ -84,6 +84,7 @@ class NoteController extends Controller
     public function create(Request $request){
         $entries = $request->entries;
         $movements = \App\Models\Movement::whereIn('movement_id' , explode(',' , $entries))->get();
+        
 
         return view('panel.notes.view' , compact('movements' , 'entries'));
     }

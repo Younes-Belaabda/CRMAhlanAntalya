@@ -61,7 +61,7 @@
                                         <td class="colored">
                                             {{ $note->content }}
                                         </td>
-                                        <td>
+                                        <td class="colored">
                                             @php
                                                 $arr = implode(',' , $note->movements->pluck('id')->toArray());
 
