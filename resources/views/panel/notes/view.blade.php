@@ -12,7 +12,7 @@
                 <div class="card">
 
                     <div class="card-body">
-                        
+
                         <br>
                         <table class="table forprint align-items-center mb-2">
                             <thead>
@@ -126,23 +126,21 @@
                         </table>
 
                         <form
-                            action="{{ route('panel.notes.create') }}"
+                            action="{{ route('panel.notes.store') }}"
                             method="post">
                             @csrf
 
                             <div class="form-group">
+                                <input type="hidden" name="entries" value="{{ request()->get('entries') }}">
+                                <input type="hidden" name="user_id" value="{{ request()->get('user_id') }}">
                                 <div style="margin: 10px 0">
                                     <b style="color: red">Note</b>
                                 </div>
                                 <textarea class="form-control" name="content" id="" cols="10" rows="5"></textarea>
                             </div>
                             <div class="d-flex">
-                                <button class="btn bg-gradient-dark">Edit</button>
-                                <div class="checkbox mb-3" style="margin-top: 11px;">
-                                    <input name="is_finished" type="checkbox" placeholder="Completed"
-                                        >
-                                    <label for="Completed">Completed</label>
-                                </div>
+                                <button class="btn bg-gradient-dark">Create</button>
+
                             </div>
                         </form>
                     </div>

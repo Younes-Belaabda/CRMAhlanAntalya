@@ -84,7 +84,7 @@ class NoteController extends Controller
     public function create(Request $request){
         $entries = $request->entries;
         $movements = \App\Models\Movement::whereIn('movement_id' , explode(',' , $entries))->get();
-        
+
 
         return view('panel.notes.view' , compact('movements' , 'entries'));
     }
@@ -96,6 +96,7 @@ class NoteController extends Controller
             'content' => $request->content,
             'user_id' => $request->user_id
         ]);
+        // dd($note);
 
         foreach(explode(',' , $request->entries) as $item){
             \App\Models\MovementNote::create([
@@ -103,6 +104,12 @@ class NoteController extends Controller
                 'note_id' => $note->id
             ]);
         }
+        // return redirect()->route('panel.notes.show_movements')
+        // ->withInput([
+        //     'user' => $note->user_id,
+        //     'movements' => $request->entries
+        // ])
+        // ->with('success' , __('Success Note Createad'));
         return back()->with('success' , __('Success Note Createad'));
     }
 
