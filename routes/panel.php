@@ -39,6 +39,8 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function(){
         Route::post('/store' , [NoteController::class , 'store'])
         ->withoutMiddleware([VerifyCsrfToken::class])
         ->name('store');
+        Route::post('/update/{note}' , [NoteController::class , 'update'])
+        ->name('update');
     });
 
     Route::group(['prefix' => '/agent', 'as' => 'prices.'], function() {

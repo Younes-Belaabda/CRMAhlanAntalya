@@ -3,8 +3,8 @@
 @section('content')
     @push('panel_css')
     @endpush
-    <?php 
-        
+    <?php
+
         function sumAmountByCurrencyDept($collection,$user,$date, $currency)
         {
             if($date == null){
@@ -22,16 +22,16 @@
                             <h5 class="mb-1 show_accro">Filter Debt</h5>
                         </div>
                         <div>
-                            <?php 
+                            <?php
                             $url = Route('panel.debt.view')."?";
                             if(isset($request["d_user"]) && $request["d_user"]){
                                 $url .="&d_user=".$request["d_user"];
                             }
-                            
+
                             if(isset($request["type"]) && $request["type"]){
                                 $url .="&type=".$request["type"];
                             }
-                            
+
                             if(isset($request["m_user"]) && $request["m_user"]){
                                 $url .="&m_user=".$request["m_user"];
                             }
@@ -41,7 +41,7 @@
                             if(isset($request["for_id"]) && $request["for_id"]){
                                 $url .="&for_id=".$request["for_id"];
                             }
-                            
+
                             if(isset($request["country_id"]) && $request["country_id"]){
                                 $url .="&country_id=".$request["country_id"];
                             }
@@ -123,28 +123,28 @@
                                 $t3 = sumAmountByCurrencyDept($all_date , $request["for_id"],null, '€');
                             ?>
                             <h5 class="mb-1">All Debt{{ $t1 != 0 || $t2 != 0 || $t3 != 0 ? ":" : ""}}
-                            
+
                             {{ $t1 == null || $t1 == 0 ? "" : " $ ".$t1}}
                             {{ $t2 == null || $t2 == 0 ? "" : "& TL ".$t2}}
-                            {{ $t3 == null || $t3 == 0 ? "" : "& € ".$t3}} 
+                            {{ $t3 == null || $t3 == 0 ? "" : "& € ".$t3}}
                             </h5>
                         </div>
-                        
+
                         <div>
-                            <?php 
+                            <?php
                             $url = Route('panel.debt.view')."?";
                             if(isset($request["from_date"]) && $request["from_date"]){
                                 $url .="&from_date=".$request["from_date"];
                             }
-                            
+
                             if(isset($request["to_date"]) && $request["to_date"]){
                                 $url .="&to_date=".$request["to_date"];
                             }
-                            
+
                             if(isset($request["for_id"]) && $request["for_id"]){
                                 $url .="&for_id=".$request["for_id"];
                             }
-                            
+
                             ?>
                             <ul class="munths">
                                 @foreach($users_admin as $uadmin)
@@ -161,7 +161,7 @@
                         @foreach($data_year as $year)
                         @foreach($data_g as $g)
                         @if($g->new_date == $year->new_date)
-                        
+
                         <table class="table align-items-center mb-0">
                             <thead>
                                 <tr class="bg">

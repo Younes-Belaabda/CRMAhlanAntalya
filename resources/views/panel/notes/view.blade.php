@@ -64,7 +64,7 @@
                                 <label for="" class="form-label">Note</label>
                                 <textarea class="form-control" name="content" id="" cols="10" rows="5"></textarea>
                             </div>
-                            <button class="btn btn-success">Create</button>
+                            <button class="btn btn-success">Save</button>
                         </form>
                     </div>
                 </div>

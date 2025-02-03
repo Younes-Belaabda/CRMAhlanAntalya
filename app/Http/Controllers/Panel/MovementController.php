@@ -99,25 +99,32 @@ class MovementController extends Controller
         $depts_p = 0;
         $depts_e = 0;
         $depts_tl = 0;
+        $user_m = User::find(@$request->d_user);
 
-        if(auth()->user()->type != 1 && $request->from_date == null){
-            return redirect('/admin/entries?d_user='.Auth()->user()->id.'&from_date='.$thisYear.'-'.$thisMonth.'-01&to_date='.$thisYear.'-'.$thisMonth.'-31');
+        $ispartner = User::find($request->d_user);
+
+        if($user->type != 1 && $request->from_date == null){
+            return redirect('/admin/entries?d_user='.$user->id.'&from_date='.$thisYear.'-'.$thisMonth.'-01&to_date='.$thisYear.'-'.$thisMonth.'-31');
         }
 
         \Artisan::call('ChangeDay:cron');
 
-        $user_m = User::find(@$request->d_user);
-        $ispartner = User::find($request->d_user);
-
+        /**
+         * Get Depts
+         */
         if(isset($ispartner) && $ispartner != null){
             $depts = Debt::where("for_id",$ispartner->id);
             $depts_usd = $depts->where("price_type", "$")->sum("price");
-            $depts_p = $depts->where("price_type", "£")->sum("price");
-            $depts_e = $depts->where("price_type", "€")->sum("price");
-            $depts_tl = $depts->where("price_type", "TL")->sum("price");
+            $depts_p   = $depts->where("price_type", "£")->sum("price");
+            $depts_e   = $depts->where("price_type", "€")->sum("price");
+            $depts_tl  = $depts->where("price_type", "TL")->sum("price");
         }
 
         $data_old = Movement::select("*" , \DB::raw("DATE_FORMAT(date, '%M %Y') new_date"), \DB::raw("DATE_FORMAT(date, '%Y') new_year"));
+
+        
+
+
         if($user->type == "1"){
             $data_old = $data_old->wherehas("m_user" , function (Builder $query) use($user){
                 $query->where("type" ,"!=", "5");

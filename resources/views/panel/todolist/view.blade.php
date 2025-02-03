@@ -43,24 +43,6 @@
                             ?>
                             <ul class="munths">
                                 <?php
-                                    // $now = 111;
-                                    $its = \App\Models\Notification::whereNull("notification_ids")->whereBetween("date" , ['2024-11-01','2024-11-30']);
-                                    $its = $its->get()->Count();
-                                    if($tnow == "01"){
-                                        $its = 0;
-                                    }
-                                ?>
-                                <li><a href="{{$url.'&from_date=2024-11-01&to_date=2024-11-30'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 11 ? "selected" : "" }}'>11</a></li>
-                                <?php
-                                    $its = \App\Models\Notification::whereNull("notification_ids")->whereBetween("date" , ['2024-12-01','2024-12-31']);
-                                    $its = $its->get()->Count();
-                                    if($tnow == "01"){
-                                        $its = 0;
-                                    }
-                                ?>
-                                <li><a href="{{$url.'&from_date=2024-12-01&to_date=2024-12-31'}}" class='{{ $its >= 1 ? "datecolor":"" }} {{ $now == 12 ? "selected" : "" }}'>12</a></li>
-
-                                <?php
                                     $its = \App\Models\Notification::whereNull("notification_ids")->whereBetween("date" , [$year.'-01-01',$year.'-01-31']);
                                     $its = $its->get()->Count();
                                     if($tnow == "01"){

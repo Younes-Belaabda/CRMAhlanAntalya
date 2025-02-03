@@ -2,13 +2,14 @@
 
 namespace App\Http\Controllers\Panel;
 
-use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Database\Eloquent\Builder;
 use App\User;
-use App\Models\{Income , Movement, MovementUser, Countries, Notification, NotificationUser, Debt};
 use Validator;
 use Carbon\Carbon;
+use App\Models\Note;
+use Illuminate\Http\Request;
+use App\Http\Controllers\Controller;
+use Illuminate\Database\Eloquent\Builder;
+use App\Models\{Income , Movement, MovementUser, Countries, Notification, NotificationUser, Debt};
 
 class NoteController extends Controller
 {
@@ -101,6 +102,21 @@ class NoteController extends Controller
                 'note_id' => $note->id
             ]);
         }
-        return back();
+        return back()->with('success' , __('Success Note Createad'));
+    }
+
+    public function update(Request $request , Note $note){
+
+
+        $data['content'] = $request->content;
+        $data['is_finished'] = false;
+
+        if($request->has('is_finished')){
+            $data['is_finished'] = true;
+        }
+
+        $note->update($data);
+
+        return back()->with('success' , __('Success Note Updated'));
     }
 }

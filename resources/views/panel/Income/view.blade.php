@@ -98,7 +98,7 @@ p.red {
                             ?>
                             <span class="showaccout"><i class="fa fa-plus"></i></span>
                             <ul class="munths">
-                                
+
 
                                 <?php
                                     $its = \App\Models\Income::whereNull("movement_id")->whereMonth("date",">",$tnow)->whereBetween("date" , [$year.'-01-01',$year.'-01-31'])->get()->Count();
@@ -219,7 +219,7 @@ p.red {
                     </div>
                 </div>
                 <?php
-                    function sumAmountByCurrency($collection,$new_date,$type, $currency)
+                    function sumAmountByCurrencyNN($collection,$new_date,$type, $currency)
                     {
                         if($type == "Income"){
                             //->whereNotNull("movement_id")
@@ -436,10 +436,10 @@ p.red {
                                             $m3=0;
                                             $m4=0;
 
-                                            $i1=sumAmountByCurrency($data_e,$year->new_date,"Income", '$');
-                                            $i2=sumAmountByCurrency($data_e,$year->new_date,"Income", 'TL');
-                                            $i3=sumAmountByCurrency($data_e,$year->new_date,"Income", '€');
-                                            $i4=sumAmountByCurrency($data_e,$year->new_date,"Income", '£');
+                                            $i1=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", '$');
+                                            $i2=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", 'TL');
+                                            $i3=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", '€');
+                                            $i4=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", '£');
 
                                             $m1=sumMAmountByCurrency($movement,$year->new_date,"$");
                                             $m2=sumMAmountByCurrency($movement,$year->new_date,"TL");
@@ -456,10 +456,10 @@ p.red {
                                             $e03 = sumMTAmountByCurrency($movement,$year->new_date, '€');
                                             $e04 = sumMTAmountByCurrency($movement,$year->new_date, '£');
 
-                                            $e1 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '$');
-                                            $e2 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", 'TL');
-                                            $e3 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '€');
-                                            $e4 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '£');
+                                            $e1 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", '$');
+                                            $e2 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", 'TL');
+                                            $e3 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", '€');
+                                            $e4 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", '£');
 
                                             $rows= 1;
                                             if($i1 != 0 || $m1 != 0 || $c1 != 0 || $e01 != 0 || $e1 != 0){
@@ -476,7 +476,7 @@ p.red {
                                             }
                                         ?>
 
-                                        <table class="table align-items-center mb-0 th_{{$rows}} nopadhids head_table">
+                                        {{-- <table class="table align-items-center mb-0 th_{{$rows}} nopadhids head_table">
                                             <thead>
                                                 <tr class="bg"><th  colspan="10">Entries PROFIT Display</th></tr>
                                             </thead>
@@ -567,7 +567,7 @@ p.red {
                                                     @endif
                                                 </tr>
                                             </tbody>
-                                        </table>
+                                        </table> --}}
                                     </div>
                                 </div>
                                 <div class="sumtions">
@@ -590,10 +590,10 @@ p.red {
                                             $m3=0;
                                             $m4=0;
 
-                                            $i1=sumAmountByCurrency($data_e,$year->new_date,"Income", '$');
-                                            $i2=sumAmountByCurrency($data_e,$year->new_date,"Income", 'TL');
-                                            $i3=sumAmountByCurrency($data_e,$year->new_date,"Income", '€');
-                                            $i4=sumAmountByCurrency($data_e,$year->new_date,"Income", '£');
+                                            $i1=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", '$');
+                                            $i2=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", 'TL');
+                                            $i3=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", '€');
+                                            $i4=sumAmountByCurrencyNN($data_e,$year->new_date,"Income", '£');
 
                                             $m1=sumMAmountByCurrency($movement,$year->new_date,"$");
                                             $m2=sumMAmountByCurrency($movement,$year->new_date,"TL");
@@ -610,10 +610,10 @@ p.red {
                                             $e03 = sumMTAmountByCurrency($movement,$year->new_date, '€');
                                             $e04 = sumMTAmountByCurrency($movement,$year->new_date, '£');
 
-                                            $e1 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '$');
-                                            $e2 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", 'TL');
-                                            $e3 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '€');
-                                            $e4 = sumAmountByCurrency($data_e,$year->new_date,"Expenses", '£');
+                                            $e1 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", '$');
+                                            $e2 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", 'TL');
+                                            $e3 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", '€');
+                                            $e4 = sumAmountByCurrencyNN($data_e,$year->new_date,"Expenses", '£');
 
                                             $rows= 1;
                                             if($i1 != 0 || $m1 != 0 || $c1 != 0 || $e01 != 0 || $e1 != 0){

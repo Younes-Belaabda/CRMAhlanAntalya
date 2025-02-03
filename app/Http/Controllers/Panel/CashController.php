@@ -21,7 +21,7 @@ class CashController extends Controller
     {
         return  $collection->where('price_type', $currency)->where('new_date', $new_date)->sum('net');
     }
-    
+
     public static function ssumAmountByCurrency($collection,$type, $currency)
     {
         if($type == "Income"){
@@ -32,10 +32,10 @@ class CashController extends Controller
          //else{
             return $collection->where('price_type', $currency)
             ->where("type" , $type)->sum('price');
-            
+
         //}
     }
-    
+
     public static function SumByType($collection, $colum,$Sum)
     {
         $item = $collection->where('price_type', $colum)->sum($Sum);
@@ -53,7 +53,7 @@ class CashController extends Controller
     {
         return $collection->where('price_type', $colum)->sum("tax");
     }
-    
+
     public function index(Request $request)
     {
         // $move = Movement::where("net_tl","!=",0)->get();
@@ -70,16 +70,16 @@ class CashController extends Controller
         //     }
         // }
         // dd($data);
-        
+
         $thisYear = date("Y");
         $thisMonth = date("m");
-        
+
         $data_eAll = Income::
             select(
                 "*",
                 \DB::raw("DATE_FORMAT(date, '%M %Y') new_date")
             );
-            
+
         // if($request->from_date != null && $request->to_date == null){
         //     $data_eAll = $data_eAll->where("date" , $request->from_date);
         // }
@@ -90,9 +90,9 @@ class CashController extends Controller
             //$data_eAll = $data_eAll->whereYear("date" , $thisYear)->whereMonth("date",$thisMonth);;
             $data_eAll = $data_eAll->whereYear("date" , $thisYear);
         // }
-        
+
         $data_eAll = $data_eAll->orderby("date")->whereNull("movement_id")->get();
-        
+
         $movemAll = Movement::
                     select(
                         "*",
@@ -111,8 +111,8 @@ class CashController extends Controller
         //     $movemAll = $movemAll->whereYear("date" , $thisYear)->whereMonth("date",$thisMonth);;
         // }
         $movemAll = $movemAll->get();
-        
-        
+
+
         $i1=$this->ssumAmountByCurrency($data_eAll,"Income", '$');
         $i2=$this->ssumAmountByCurrency($data_eAll,"Income", 'TL');
         $i3=$this->ssumAmountByCurrency($data_eAll,"Income", '€');
@@ -122,28 +122,28 @@ class CashController extends Controller
         $m2=$this->sumMAmountByCurrency($movemAll,"TL");
         $m3=$this->sumMAmountByCurrency($movemAll,"€");
         $m4=$this->sumMAmountByCurrency($movemAll,"£");
-        
+
         $c1 = $this->sumMCAmountByCurrency($movemAll,"$");
         $c2 = $this->sumMCAmountByCurrency($movemAll,"TL");
         $c3 = $this->sumMCAmountByCurrency($movemAll,"€");
         $c4 = $this->sumMCAmountByCurrency($movemAll,"£");
-        
+
         $e01 = $this->sumMTAmountByCurrency($movemAll, '$');
         $e02 = $this->sumMTAmountByCurrency($movemAll, 'TL');
         $e03 = $this->sumMTAmountByCurrency($movemAll, '€');
         $e04 = $this->sumMTAmountByCurrency($movemAll, '£');
-        
+
         $e1 = $this->ssumAmountByCurrency($data_eAll,"Expenses", '$');
         $e2 = $this->ssumAmountByCurrency($data_eAll,"Expenses", 'TL');
         $e3 = $this->ssumAmountByCurrency($data_eAll,"Expenses", '€');
         $e4 = $this->ssumAmountByCurrency($data_eAll,"Expenses", '£');
-        
+
 
         $ts1=$i1-$e1;
         $ts2=$i2-$e2;
         $ts3=$i3-$e3;
         $ts4=$i4-$e4;
-        
+
         $data = Income::
             select(
                 "*",
@@ -165,7 +165,7 @@ class CashController extends Controller
             $data = $data->where("for_id" , $request->for_id);
         }
         $data = $data->orderby("date");
-        //$as = $data; 
+        //$as = $data;
         $data_e = $data->whereNull("movement_id")->get();
         $data_y = $data->groupby("new_date")->get();
 

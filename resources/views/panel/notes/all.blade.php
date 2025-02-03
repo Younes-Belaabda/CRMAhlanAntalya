@@ -41,7 +41,7 @@
                                 <?php
                                     $cons = $data->where("type",$keys+1)->count();
                                 ?>
-                                <li><a href="{{$url.'&type='.($keys+1)}}" class='{{ @$request["type"] == $keys+1 ? "selected" : "" }}'>{{$ut . " " . $cons }}</a></li>
+                                <li><a href="{{$url.'&type='.($keys+1)}}" class='{{ @$request["type"] == $keys+1 ? "selected" : "" }}'>{{$ut }}</a></li>
                                 @endforeach
                             </ul>
                         </div>
@@ -51,6 +51,7 @@
                     <div class="table-responsive p-0">
                         @foreach($types as $keys=>$type)
                             @foreach($type as $key=>$typew)
+
                             @if(isset($request["type"]) && @$request["type"] == $key)
                             <table class="table align-items-center mb-0 nopadhid">
                                 <thead>
@@ -79,8 +80,8 @@
                                 <tbody>
                             <?php $con = 1; ?>
                                   @foreach($data as $key => $row)
-                                  @if($row->Typename == $typew)
-                                    <tr>
+                                  @if($row->Typename == $typew && count($row->notes) > 0)
+                                    <tr >
                                         <td style="width: 20px">
                                             <p class="text-xs font-weight-bold mb-0">{{ $con }}</p>
                                         </td>
