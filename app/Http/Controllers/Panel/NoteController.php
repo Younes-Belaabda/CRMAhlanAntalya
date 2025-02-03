@@ -97,20 +97,25 @@ class NoteController extends Controller
             'user_id' => $request->user_id
         ]);
         // dd($note);
-
+        $ids = [];
         foreach(explode(',' , $request->entries) as $item){
-            \App\Models\MovementNote::create([
+            $mvnote = \App\Models\MovementNote::create([
                 'movement_id' => $item,
                 'note_id' => $note->id
             ]);
+
+            $ids[] = $mvnote->id;
         }
-        // return redirect()->route('panel.notes.show_movements')
-        // ->withInput([
-        //     'user' => $note->user_id,
-        //     'movements' => $request->entries
-        // ])
-        // ->with('success' , __('Success Note Createad'));
-        return back()->with('success' , __('Success Note Createad'));
+
+        // dd($ids);
+
+        return redirect()->route('panel.notes.show_movements' , [
+            'user' => $note->user_id,
+            'movements' => implode(',' , $ids)
+        ])
+
+        ->with('success' , __('Success Note Createad'));
+        // return back()->with('success' , __('Success Note Createad'));
     }
 
     public function update(Request $request , Note $note){
