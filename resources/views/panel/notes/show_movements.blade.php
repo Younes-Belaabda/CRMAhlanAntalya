@@ -76,7 +76,7 @@
                                         @endphp
                                         <td style="{{ $user_style }}">
                                             @if ($mov->sender_user == null)
-                                                DIRECT
+                                                {{ $user->user_name }}
                                             @else
                                                 {{ $usr->user_name }}
                                             @endif
