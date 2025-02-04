@@ -17,7 +17,7 @@ use App\Http\Controllers\PaymentController;
 
 if(env('APP_ENV') == 'developement'){
     Route::get('demo-login' , function(){
-        $email = 'team2025@mail.com';
+        $email = 'abdalbari.taleb@gmail.com';
         $user = \App\User::where('email', '=', $email)->first();
         Auth::loginUsingId($user->id);
         return redirect()->route('login');
