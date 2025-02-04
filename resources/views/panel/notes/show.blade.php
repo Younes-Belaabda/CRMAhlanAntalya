@@ -2,6 +2,19 @@
 @section('sub_title')
     Notes - {{ $user->user_name }}
 @endsection
+
+@php
+    $breadcrumbs = '
+        <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+            <li class="breadcrumb-item text-md"><a class="opacity-5 text-dark" href="' . route('panel.notes.all') .'">Notes</a>
+            </li>
+            <li class="breadcrumb-item text-sm text-dark active text-capitalize" aria-current="page">' .
+                "Notes " . $user->user_name
+            . '</li>
+        </ol>
+    ';
+@endphp
+
 @section('content')
     <style>
         tr.is_completed td.colored {

@@ -1150,8 +1150,8 @@
                                     {{-- @if (Auth()->user()->type == 1 && Auth()->user()->id != 5) --}}
                                     @if (Auth()->user()->type == 1)
                                         @if (isset($ispartner->type) && $ispartner->id == 5)
-                                            @include('panel.Movement.profitAdmin')
                                         @endif
+                                        @include('panel.Movement.profitAdmin')
                                         @include('panel.Movement.profit')
                                     @endif
                                     <!--&& Auth()->user()->id == 5 && isset($ispartner) && $ispartner->id == 5-->

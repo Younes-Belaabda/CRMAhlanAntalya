@@ -57,8 +57,14 @@
                                         <td style="background-color: {{ $cur_bg }}">{{ abreviation_country($mov->country->name) }}</td>
                                         <td style="background-color: {{ $cur_bg }}">{{ $mov->description }}</td>
                                         <td
+                                            class="user"
                                             style="background-color: {{ $mov->m_user->background }} ; color : {{ $mov->m_user->color }}">
-                                            {{ $mov->m_user->user_name }}</td>
+                                            <a
+                                            style="background-color: {{ $mov->m_user->background }} ; color : {{ $mov->m_user->color }}"
+                                            class="text-xst font-weight-bold mb-0" href="{{ route('panel.movement.view') . "?d_user=" . $mov->m_user->id  }}">
+                                                {{ $mov->m_user->user_name }}
+                                            </a>
+                                        </td>
                                         @php
                                             $user_style = 'background-color: #016E8F; color:white';
                                             if ($mov->sender_user != null) {
@@ -66,12 +72,14 @@
                                                 $user_style = "background-color: {$usr->background}; color:{$usr->color}";
                                             }
                                         @endphp
-                                        <td style="{{ $user_style }}">
-                                            @if ($mov->sender_user == null)
-                                                {{ $user->user_name }}
-                                            @else
-                                                {{ $usr->user_name }}
-                                            @endif
+                                         <td class="user" style="{{ $user_style }}">
+                                            <a href="{{ route('panel.movement.view') . "?d_user=" . $usr->id  }}" style="{{ $user_style }}">
+                                                @if ($mov->sender_user == null)
+                                                    {{ $usr->user_name }}
+                                                @else
+                                                    {{ $usr->user_name }}
+                                                @endif
+                                            </a>
                                         </td>
                                         @php
                                             $price_style = 'background-color:#A6D5FA';

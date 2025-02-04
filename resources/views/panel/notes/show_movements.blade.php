@@ -4,6 +4,23 @@
     Note - Movements
 @endsection
 
+@php
+    $breadcrumbs = '
+        <ol class="breadcrumb bg-transparent mb-0 pb-0 pt-1 px-0 me-sm-6 me-5">
+            <li class="breadcrumb-item text-md"><a class="opacity-5 text-dark" href="' . route('panel.notes.show' , [
+                'user' => $user->id
+            ]) .'">' .
+                "Notes " . $user->user_name
+                . '
+            </a>
+            </li>
+            <li class="breadcrumb-item text-sm text-dark active text-capitalize" aria-current="page">
+                Show
+            </li>
+        </ol>
+    ';
+@endphp
+
 @section('content')
     @php
         // $note = \App\Models\MovementNote::where('movement_id', $movements[0]->movement_id)->first()->note;
@@ -65,8 +82,14 @@
                                         <td style="background-color: {{ $cur_bg }}">{{ abreviation_country($mov->country->name) }}</td>
                                         <td style="background-color: {{ $cur_bg }}">{{ $mov->description }}</td>
                                         <td
+                                            class="user"
                                             style="background-color: {{ $mov->m_user->background }} ; color : {{ $mov->m_user->color }}">
-                                            {{ $mov->m_user->user_name }}</td>
+                                            <a
+                                            style="background-color: {{ $mov->m_user->background }} ; color : {{ $mov->m_user->color }}"
+                                            class="text-xst font-weight-bold mb-0" href="{{ route('panel.movement.view') . "?d_user=" . $mov->m_user->id  }}">
+                                                {{ $mov->m_user->user_name }}
+                                            </a>
+                                        </td>
                                         @php
                                             $user_style = 'background-color: #016E8F; color:white';
                                             if ($mov->sender_user != null) {
@@ -74,12 +97,14 @@
                                                 $user_style = "background-color: {$usr->background}; color:{$usr->color}";
                                             }
                                         @endphp
-                                        <td style="{{ $user_style }}">
-                                            @if ($mov->sender_user == null)
-                                                {{ $user->user_name }}
-                                            @else
-                                                {{ $usr->user_name }}
-                                            @endif
+                                        <td class="user" style="{{ $user_style }}">
+                                            <a href="{{ route('panel.movement.view') . "?d_user=" . $user->id  }}" style="{{ $user_style }}">
+                                                @if ($mov->sender_user == null)
+                                                    {{ $user->user_name }}
+                                                @else
+                                                    {{ $usr->user_name }}
+                                                @endif
+                                            </a>
                                         </td>
                                         @php
                                             $price_style = 'background-color:#A6D5FA';

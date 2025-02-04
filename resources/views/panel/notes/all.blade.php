@@ -1,5 +1,5 @@
 @extends('panel.layouts.base',['is_main'=>true])
-@section('sub_title','View Users')
+@section('sub_title','All')
 @section('content')
     @push('panel_css')
     @endpush
