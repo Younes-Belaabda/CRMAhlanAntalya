@@ -84,7 +84,11 @@ class NoteController extends Controller
         $note = \App\Models\MovementNote::where('id' , $n)->first()->note;
 
         // dd($note);
-        $movements = \App\Models\Movement::whereIn('movement_id' , $movements)->get();
+        $movements = \App\Models\Movement::whereIn('movement_id' , $movements)
+        ->orderBy('date')
+        ->get();
+
+        // dd($movements);
 
         return view('panel.notes.show_movements' , compact('user' , 'movements' , 'note'));
     }
