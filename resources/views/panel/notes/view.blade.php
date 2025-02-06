@@ -72,12 +72,15 @@
                                                 $user_style = "background-color: {$usr->background}; color:{$usr->color}";
                                             }
                                         @endphp
+                                        @php
+                                            $u = \App\User::find(request()->get('user_id'));
+                                        @endphp
                                          <td class="user" style="{{ $user_style }}">
-                                            <a href="{{ route('panel.movement.view') . "?d_user=" . $usr->id  }}" style="{{ $user_style }}">
+                                            <a href="{{ route('panel.movement.view') . "?d_user=" . $u->id  }}" style="{{ $user_style }}">
                                                 @if ($mov->sender_user == null)
-                                                    {{ $usr->user_name }}
+                                                    {{ $u->user_name }}
                                                 @else
-                                                    {{ $usr->user_name }}
+                                                    {{ $mov->sender_user->user_name }}
                                                 @endif
                                             </a>
                                         </td>

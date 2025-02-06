@@ -381,7 +381,7 @@
                                 Filter entries
                             </h5>
                         </div>
-                        <div>
+                        <div style="margin-right:45px">
                             <?php
                             $url = Route('panel.movement.view') . '?';
                             if (isset($request['d_user']) && $request['d_user']) {
@@ -701,7 +701,7 @@
                             @endif
                             @if ($aush->type == 1 || $aush->type == 5)
                                 @if (request()->has('d_user') && request()->get('d_user') != null)
-                                    <button class="btn-note caldn btn bg-gradient-dark btn-sm mb-2">
+                                    <button class="btn-note caldn btn bg-gradient-dark btn-sm mb-2" style="height: 28px">
                                         GO
                                     </button>
                                 @endif
