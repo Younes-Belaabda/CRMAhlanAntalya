@@ -92,7 +92,7 @@
                                                     'user' => $note->user_id,
                                                     'movements' => $arr,
                                                 ]) }}">
-                                                <i class="fas fa-eye text-secondary"></i>
+                                                <i class="fas fa-eye"></i>
                                             </a>
                                             <a data-url="{{ route('panel.notes.delete' , ['note' => $note]) }}"
                                                 class="mx-1 delete" data-bs-toggle="tooltip"
