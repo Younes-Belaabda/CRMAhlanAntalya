@@ -144,4 +144,15 @@ class NoteController extends Controller
 
         return back()->with('success' , __('Success Note Updated'));
     }
+
+    public function delete(Note $note){
+        foreach($note->movements as $mov){
+            $mov->delete();
+        }
+
+        $note->delete();
+
+        return $this->response_api(true, 'The deletion was successful');
+        // return back()->with('success' , __('Success Note Deleted'));
+    }
 }

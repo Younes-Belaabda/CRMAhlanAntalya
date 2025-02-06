@@ -41,6 +41,8 @@ Route::group(['prefix' => '/', 'middleware' => ['auth']], function(){
         ->name('store');
         Route::post('/update/{note}' , [NoteController::class , 'update'])
         ->name('update');
+        Route::delete('/delete/{note}' , [NoteController::class , 'delete'])
+        ->name('delete');
     });
 
     Route::group(['prefix' => '/agent', 'as' => 'prices.'], function() {
