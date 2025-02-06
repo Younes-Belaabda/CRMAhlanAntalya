@@ -451,6 +451,7 @@ border-radius: 50%;
 table.table tr.selected td {
 border: 2px solid #03a9f4 !important;
 }
+
 td.bold {
 font-weight: bold;
 }

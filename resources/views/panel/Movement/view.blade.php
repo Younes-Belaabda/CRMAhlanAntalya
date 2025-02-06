@@ -1312,7 +1312,8 @@
 
     <form style="visibility: hidden" id="frm-note-create" action="{{ route('panel.notes.create') }}" method="get">
         <input id="i_entries" type="text" name="entries">
-        <input id="i_user_id" type="text" value="{{ request()->get('d_user') }}" class="d_user_ipt" name="user_id">
+        <input id="i_user_id" type="text" value="{{ request()->get('d_user') }}" class="d_user_ipt"
+            name="user_id">
     </form>
 
 
@@ -1375,5 +1376,20 @@
             });
         });
     </script>
+    <script>
+        $('.mouvements_boxes').on('click', function() {
+            if ($(this).is(':checked')) {
+                $(this).parent().parent().addClass('selectedbox');
+            } else {
+                $(this).parent().parent().removeClass('selectedbox');
+            }
+        });
+    </script>
 @endsection
 @stop
+
+<style>
+table.table tr.selectedbox td {
+    border: 2px solid #03a9f4 !important;
+}
+</style>
