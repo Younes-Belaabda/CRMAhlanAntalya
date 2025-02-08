@@ -434,7 +434,6 @@ if(!function_exists('CountofTypeAdminAC2')){
     {
         if ($type == null) {
             $sum = $collection->Where('admin_partner', '!=', null)->where('status', 1)->count();
-            
         } else {
             $sum = $collection->Where('admin_partner', '!=', null)->where('type', $type)->where('status', 1)->count();
         }

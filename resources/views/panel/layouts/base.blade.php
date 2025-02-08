@@ -626,7 +626,7 @@
         }
 
         a.filter_btn {
-            /*display:none;*/
+            display:flex;
             position: absolute;
             right: 8px;
             top: 8px;
@@ -1025,6 +1025,7 @@
 
         a.gotop,
         a.godown {
+            display: flex;
             position: fixed;
             bottom: 15px;
             right: 15px;
