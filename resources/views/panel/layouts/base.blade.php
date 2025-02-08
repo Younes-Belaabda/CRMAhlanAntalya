@@ -626,6 +626,8 @@
         }
 
         a.filter_btn {
+            justify-content: center;
+            align-items: center;
             display:flex;
             position: absolute;
             right: 8px;
@@ -1025,6 +1027,8 @@
 
         a.gotop,
         a.godown {
+            justify-content: center;
+            align-items: center;
             display: flex;
             position: fixed;
             bottom: 15px;
