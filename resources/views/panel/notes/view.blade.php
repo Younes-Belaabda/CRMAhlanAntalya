@@ -72,7 +72,7 @@
                                                 $user_style = "background-color: {$usr->background}; color:{$usr->color}";
                                             }
                                         @endphp
-                                        @php
+                                        {{-- @php
                                             $u = \App\User::find(request()->get('user_id'));
                                         @endphp
                                          <td class="user" style="{{ $user_style }}">
@@ -81,6 +81,26 @@
                                                     {{ $u->user_name }}
                                                 @else
                                                     {{ $mov->sender_user->user_name }}
+                                                @endif
+                                            </a>
+                                        </td> --}}
+
+                                        @php
+                                            $user_style = 'background-color: #016E8F; color:white';
+                                            if ($mov->sender_user != null) {
+                                                $usr = \App\User::find($mov->sender_user->user_id);
+                                                $user_style = "background-color: {$usr->background}; color:{$usr->color}";
+                                            }else{
+                                                 $usr = \App\User::find(request()->get('user_id'));
+                                                $user_style = "background-color: {$usr->background}; color:{$usr->color}";
+                                            }
+                                        @endphp
+                                        <td class="user" style="{{ $user_style }}">
+                                            <a href="{{ route('panel.movement.view') . "?d_user=" . $usr->id  }}" style="{{ $user_style }}">
+                                                @if ($mov->sender_user == null)
+                                                    {{ $usr->user_name }}
+                                                @else
+                                                    {{ $usr->user_name }}
                                                 @endif
                                             </a>
                                         </td>

@@ -11,4 +11,8 @@ class MovementNote extends Model
     public function note(){
         return $this->belongsTo(Note::class);
     }
+
+    public function movement(){
+        return $this->belongsTo(Movement::class);
+    }
 }

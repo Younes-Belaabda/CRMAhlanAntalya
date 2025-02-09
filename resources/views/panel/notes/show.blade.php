@@ -17,6 +17,59 @@
         '</li>
         </ol>
     ';
+
+    function get_period($items){
+        $movements = [];
+        foreach ($items as $item) {
+            $movements[] = \App\Models\Movement::find($item->movement_id);
+        }
+        $dates    = collect($movements)->pluck('date')->toArray();
+        $to_dates = collect($movements)->pluck('to_date')->toArray();
+
+
+        $final_dates = collect(array_merge($dates , $to_dates))
+        ->whereNotNull();
+
+        $final_dates = $final_dates->toArray();
+
+
+        $final_dates = array_map(function($el){
+            return \Carbon\Carbon::parse($el);
+        } , $final_dates);
+
+
+
+
+
+        $big_date   = current($final_dates);
+        $lower_date = end($final_dates);
+
+        foreach ($final_dates as $dt) {
+            if($dt->gt($big_date)){
+                $big_date = $dt;
+            }
+        }
+
+        foreach ($final_dates as $dt) {
+            if($dt->lt($lower_date)){
+                $lower_date = $dt;
+            }
+        }
+
+        $date_day    = $lower_date->format('d');
+        $date_mounth = $lower_date->format('M');
+        $date_to_day = $big_date->format('d');
+        $date_to_mounth = $big_date->format('M');
+        $date_string = '';
+
+        if($date_mounth == $date_to_mounth){
+            $date_string = "$date_day - $date_to_day $date_mounth";
+        }else{
+            $date_string = "$date_day $date_mounth - $date_to_day $date_to_mounth";
+        }
+
+        return $date_string;
+    }
 @endphp
 
 @section('content')
@@ -55,6 +108,10 @@
                                         style="width:40px">
                                         Note
                                     </th>
+                                    <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
+                                        style="width:40px">
+                                        Period
+                                    </th>
 
                                     <th
                                         class="text-center text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"style="width:15%">
@@ -77,6 +134,11 @@
                                         </td>
                                         <td class="colored">
                                             {{ $note->content }}
+                                        </td>
+                                        <td class="colored">
+                                            {{-- 01 - 07 JAN --}}
+                                            {{-- 01 JAN - 07 FEB --}}
+                                            {{ get_period($note->movements) }}
                                         </td>
                                         <td class="colored">
                                             @php
