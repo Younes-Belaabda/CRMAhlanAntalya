@@ -116,6 +116,10 @@ $tj_date = date('Y-m-d'); ?>
 
         @if(request()->has('d_user') && request()->get('d_user') != null)
             <input type="checkbox" value="{{$row->movement_id}}" class="mouvements_boxes">
+            @php
+            $current_user = \App\User::find(request()->get('d_user'));
+            $troughline_ids = \App\Services\EntriesService::getIdLastNotes($current_user);
+            @endphp
         @endif
 
 
@@ -169,7 +173,8 @@ $tj_date = date('Y-m-d'); ?>
         $now = Carbon\Carbon::now()->format('Y-m-d');
         ?>
         <p>
-            <b class="text-xst font-weight-bold mb-0">{{ date('d M', strtotime($row->date)) }}</b>
+            <b class="text-xst font-weight-bold mb-0"
+            >{{ date('d M', strtotime($row->date)) }}</b>
             @if ($row->to_date != null)
                 <b
                     class="text-xst font-weight-bold mb-0 {{ $to_date_1 == $now && $row->completed != 1 ? 'redcolrer' : '' }}">{{ date('d M', strtotime($row->to_date)) }}</b>

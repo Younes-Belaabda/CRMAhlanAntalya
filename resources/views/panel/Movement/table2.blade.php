@@ -138,8 +138,13 @@
                 <td style="{{$color}}" class="{{ $old_this == true ? "CPRV": "" }}  {{ $rosw != 0 ? "has_old" : ""}}" >
 
                      @if(request()->has('d_user') && request()->get('d_user') != null)
-                        <input type="checkbox" value="{{$row->movement_id}}" class="mouvements_boxes">
-                    @endif
+            <input type="checkbox" value="{{$row->movement_id}}" class="mouvements_boxes">
+            @php
+            $current_user = \App\User::find(request()->get('d_user'));
+            $troughline_ids = \App\Services\EntriesService::getIdLastNotes($current_user);
+            @endphp
+
+        @endif
 
                     @if($rosw != 0)
                         <span class="upspan" style="float: left;width: 10px;"><i class="fa fa-arrow-up"></i> {{$rosw}}</span>
@@ -223,9 +228,33 @@
                                     $now = Carbon\Carbon::now()->format("Y-m-d");;
                         ?>
                         <p>
-                            <b class="text-xst font-weight-bold mb-0">{{ date("d M", strtotime($row->date)) }}</b>
+                            @if(in_array($row->movement_id , $troughline_ids ?? []))
+                                @php
+                                    $param_movements = \App\Services\EntriesService::getLastIdNote($row->movement_id);
+                                    $param_user = request()->get('d_user');
+                                    $route_note = route('panel.notes.show_movements' , [
+                                        'user' => $param_user,
+                                        'movements' => $param_movements,
+                                    ]);
+                                @endphp
+                                {{-- <a href="{{ $route_note }}" target="_blank"> --}}
+
+                            @endif
+                            <b class="text-xst font-weight-bold mb-0"
+                            @if(in_array($row->movement_id , $troughline_ids ?? []) && $row->to_date == null)
+                            style="text-decoration: line-through"
+                            @endif
+                            >{{ date("d M", strtotime($row->date)) }}</b>
+
                             @if($row->to_date != null)
-                            <b class="text-xst font-weight-bold mb-0 {{ $to_date_1 == $now && $row->completed != 1  ? "redcolrer" : ""}}">{{ date("d M", strtotime($row->to_date)) }}</b>
+                            <b
+                            @if(in_array($row->movement_id , $troughline_ids ?? []))
+                            style="text-decoration: line-through"
+                            @endif
+                            class="text-xst font-weight-bold mb-0 {{ $to_date_1 == $now && $row->completed != 1  ? "redcolrer" : ""}}">{{ date("d M", strtotime($row->to_date)) }}</b>
+                            @endif
+                            @if(in_array($row->movement_id , $troughline_ids ?? []))
+                                {{-- </a> --}}
                             @endif
                         </p>
                         <p class="showmobile {{ $to_date_1 == $now && $row->completed != 1  ? "redcolrer" : ""}}">

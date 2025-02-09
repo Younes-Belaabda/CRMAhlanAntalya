@@ -1,3 +1,5 @@
+
+
 <style>
     .typeswicon i {
         font-size: 14px;
@@ -115,6 +117,8 @@ $tj_date = date('Y-m-d'); ?>
     <td style="{{ $color }}" class="{{ $old_this == true ? 'CPRV' : '' }}  {{ $rosw != 0 ? 'has_old' : '' }}">
 
         @if (request()->has('d_user') && request()->get('d_user') != null)
+            
+
             <input type="checkbox" value="{{ $row->movement_id }}" class="mouvements_boxes">
         @endif
 
