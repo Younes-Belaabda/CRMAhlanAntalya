@@ -25,10 +25,11 @@
                         $big_movement = $movement;
                     }
                 }
-                $final_mv[] = $big_movement;
+                $final_mv = $big_movement;
             }
 
-            return collect($final_mv)->pluck('movement_id')->toArray() ?? [];
+            return [collect($final_mv)['movement_id']] ?? [];
+            // return collect($final_mv)->pluck('movement_id')->toArray() ?? [];
         }
 
         public static function getLastIdNote($id){
