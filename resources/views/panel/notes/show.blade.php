@@ -106,11 +106,11 @@
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
                                         style="width:40px">
-                                        Note
+                                        Period
                                     </th>
                                     <th class="text-uppercase text-secondary text-xxs font-weight-bolder opacity-7"
                                         style="width:40px">
-                                        Period
+                                        Note
                                     </th>
 
                                     <th
@@ -133,13 +133,12 @@
                                             {{ $note->created_at->format('H:i') }}
                                         </td>
                                         <td class="colored">
-                                            {{ $note->content }}
-                                        </td>
-                                        <td class="colored">
-                                            {{-- 01 - 07 JAN --}}
-                                            {{-- 01 JAN - 07 FEB --}}
                                             {{ get_period($note->movements) }}
                                         </td>
+                                        <td class="colored">
+                                            {{ $note->content }}
+                                        </td>
+
                                         <td class="colored">
                                             @php
                                                 $arr = implode(',', $note->movements->pluck('id')->toArray());
