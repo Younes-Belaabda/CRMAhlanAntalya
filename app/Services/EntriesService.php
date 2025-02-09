@@ -19,9 +19,9 @@
             foreach($movements as $mv){
                 $big_movement   = current($mv);
                 foreach($mv as $movement){
-                    if(\Carbon\Carbon::parse($big_movement->date)->lt(\Carbon\Carbon::parse($movement->date)) && $movement->to_date == null){
+                    if(\Carbon\Carbon::parse($big_movement->date)->lessThanOrEqualTo(\Carbon\Carbon::parse($movement->date)) && $movement->to_date == null){
                         $big_movement = $movement;
-                    }elseif(\Carbon\Carbon::parse($big_movement->date)->lt($movement->date) && \Carbon\Carbon::parse($big_movement->date)->lt($movement->to_date)){
+                    }elseif(\Carbon\Carbon::parse($big_movement->date)->lessThanOrEqualTo($movement->date) && \Carbon\Carbon::parse($big_movement->date)->lessThanOrEqualTo($movement->to_date)){
                         $big_movement = $movement;
                     }
                 }
