@@ -28,9 +28,9 @@
                 $final_mv = $big_movement;
             }
 
-            dd($final_mv);
+            // dd($final_mv);
 
-            return [collect($final_mv)['movement_id']] ?? [];
+            return [collect($final_mv)['movement_id'] ?? null] ?? [];
             // return collect($final_mv)->pluck('movement_id')->toArray() ?? [];
         }
 
